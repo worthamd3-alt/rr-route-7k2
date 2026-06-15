@@ -115,6 +115,7 @@ main{padding:6px 14px 40px;}
 .sact svg{flex:none;}
 .sheet-phone{margin:8px 2px 0;font-size:15px;font-weight:600;}
 .sheet-phone a{color:var(--accent);text-decoration:none;}
+.sheet-fax{margin:4px 2px 0;font-size:14px;font-weight:600;color:var(--muted);}
 .edit-btn{display:inline-flex;align-items:center;gap:7px;margin:16px 0 2px;background:none;border:none;color:var(--accent);font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;padding:4px 0;}
 .ed-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:14px 2px 5px;letter-spacing:.02em;}
 .ed-input{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:13px;font-size:16px;font-family:inherit;color:var(--ink);outline:none;}
@@ -396,6 +397,7 @@ function renderSheet(){
     </div>
     ${addr?`<div class="sheet-addr">${esc(addr)}</div>`:''}
     ${p.phone?`<div class="sheet-phone"><a href="tel:${esc(tel)}">${esc(p.phone)}</a></div>`:''}
+    ${p.fax?`<div class="sheet-fax">Fax: ${esc(p.fax)}</div>`:''}
     <button class="edit-btn" onclick="startEdit()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit address &amp; phone</button>
     <div class="note-input">
       <textarea id="notebox" placeholder="Log a call or conversation\u2026" rows="3"></textarea>
@@ -420,6 +422,7 @@ function renderEdit(p){
     ${field('edCity','City',(p.city&&p.city!=='Address missing')?p.city:'','Tupelo')}
     ${field('edZip','ZIP',p.zip,'38801')}
     ${field('edPhone','Phone',p.phone,'(662) 555-0100','tel')}
+    ${field('edFax','Fax',p.fax,'(662) 555-0199','tel')}
     <div class="ed-actions">
       <button class="ed-cancel" onclick="renderSheetView()">Cancel</button>
       <button class="ed-save" onclick="saveEdit()">Save changes</button>
@@ -431,11 +434,11 @@ function renderSheetView(){editing=false;renderSheet();}
 function val(id){const e=document.getElementById(id);return e?e.value.trim():'';}
 function saveEdit(){
   const base=byId[sheetId];
-  const o={street:val('edStreet'),suite:val('edSuite'),city:val('edCity'),zip:val('edZip'),phone:val('edPhone')};
-  // if everything matches the baked data and no phone, drop the override to keep things clean
+  const o={street:val('edStreet'),suite:val('edSuite'),city:val('edCity'),zip:val('edZip'),phone:val('edPhone'),fax:val('edFax')};
+  // if everything matches the baked data and no phone/fax, drop the override to keep things clean
   const same=o.street===(base.street||'')&&o.suite===(base.suite||'')&&
              o.city===((base.city&&base.city!=='Address missing')?base.city:'')&&
-             o.zip===(base.zip||'')&&!o.phone;
+             o.zip===(base.zip||'')&&!o.phone&&!o.fax;
   if(same) delete edits[sheetId]; else edits[sheetId]=o;
   saveE(); rebuildIndex(); editing=false; renderSheet(); render();
 }
@@ -488,6 +491,7 @@ function buildCallLog(){
     const addr=[p.street,p.suite,(p.city&&p.city!=='Address missing'?p.city+', MS':''),p.zip].filter(Boolean).join(', ');
     if(addr)out+='  '+addr+'\n';
     if(p.phone)out+='  '+p.phone+'\n';
+    if(p.fax)out+='  Fax: '+p.fax+'\n';
     notes[bp.id].slice().sort((a,b)=>a.ts-b.ts).forEach(n=>{
       out+='  \u2022 '+new Date(n.ts).toLocaleString()+'\n    '+n.text.replace(/\n/g,'\n    ')+'\n';
     });
