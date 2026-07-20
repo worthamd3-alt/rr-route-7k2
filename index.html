@@ -75,6 +75,10 @@ main{padding:6px 14px 40px;}
 .prog{flex:1;height:7px;background:var(--line);border-radius:99px;overflow:hidden;}
 .prog i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .35s;}
 .dstat{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.sortrow{display:flex;align-items:center;gap:7px;margin:0 0 12px;flex-wrap:wrap;}
+.sortlbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;}
+.sortbtn{font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;}
+.sortbtn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
 .toolrow{display:flex;align-items:center;justify-content:space-between;margin:14px 0 10px;}
 .toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none;}
 .sw{width:38px;height:22px;border-radius:99px;background:var(--line);position:relative;transition:background .2s;flex:none;}
@@ -259,6 +263,7 @@ let visited=JSON.parse(localStorage.getItem(LS)||'{}');
 let notes=JSON.parse(localStorage.getItem(LSN)||'{}');
 let edits=JSON.parse(localStorage.getItem(LSE)||'{}');
 let staff=JSON.parse(localStorage.getItem(LSS)||'{}');
+let citySort=localStorage.getItem('refrounds_sort')||'volume';
 let prevCounts=JSON.parse(localStorage.getItem('refrounds_prev_v1')||'{}');
 let gainHist=JSON.parse(localStorage.getItem('refrounds_hist_v1')||'{}');
 if(!Object.keys(prevCounts).length){ BAKED_PROVIDERS.forEach(p=>prevCounts[p.id]=p.count); localStorage.setItem('refrounds_prev_v1',JSON.stringify(prevCounts)); }
@@ -427,7 +432,19 @@ function renderHome(){
 }
 
 function renderCity(){
-  const c=view.city; let list=cities[c].slice().sort((a,b)=>b.count-a.count);
+  const c=view.city; let list=cities[c].slice();
+  if(citySort==='address'){
+    // group providers who share a building, then order groups by their strongest referrer
+    const groups={};
+    list.forEach(p=>{ const k=clinicKey(p); (groups[k]=groups[k]||[]).push(p); });
+    const ordered=Object.values(groups).map(g=>{
+      g.sort((a,b)=>b.count-a.count);
+      return {g, top:g[0].count, addr:(eff(g[0]).street||'\uffff')};
+    }).sort((x,y)=>x.addr.localeCompare(y.addr)||y.top-x.top);
+    list=[].concat(...ordered.map(o=>o.g));
+  } else {
+    list.sort((a,b)=>b.count-a.count);
+  }
   if(q)list=list.filter(p=>norm(p.name).includes(q));
   const s=cityStats(c);
   let shown=hideDone?list.filter(p=>!visited[p.id]):list;
@@ -440,12 +457,20 @@ function renderCity(){
     <div class="toggle ${hideDone?'on':''}" id="tog"><div class="sw"><i></i></div>Hide visited</div>
     <button class="reset" id="reset">Reset this city</button>
   </div>
+  <div class="sortrow">
+    <span class="sortlbl">Sort</span>
+    <button class="sortbtn ${citySort==='volume'?'on':''}" data-sort="volume">Referral volume</button>
+    <button class="sortbtn ${citySort==='address'?'on':''}" data-sort="address">Address</button>
+  </div>
   <button class="addlead citylead" onclick="openProspect('${esc(c).replace(/'/g,"\\'")}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add a prospect in ${esc(c)}</button>`;
   if(!shown.length){h+=`<div class="empty">${hideDone?'All caught up here \u2014 every provider visited. \ud83c\udf89':'No matches.'}</div>`;}
   else h+=shown.map(provRow).join('');
   main.innerHTML=h;
   document.getElementById('back').onclick=()=>{view={mode:'home'};q='';document.getElementById('q').value='';render();window.scrollTo(0,0);};
   document.getElementById('tog').onclick=()=>{hideDone=!hideDone;render();};
+  document.querySelectorAll('.sortbtn').forEach(b=>b.onclick=()=>{
+    citySort=b.dataset.sort; localStorage.setItem('refrounds_sort',citySort); render();
+  });
   document.getElementById('reset').onclick=()=>{
     if(confirm('Clear visited marks for '+c+'?')){cities[c].forEach(p=>delete visited[p.id]);save();tally();render();}
   };
@@ -821,7 +846,7 @@ function openDataSheet(){
   o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
 }
 function doCallLog(){shareOrDownload('ReferralRounds-CallLog-'+stamp()+'.txt',buildCallLog(),'text/plain');}
-function doBackup(){const data=JSON.stringify({app:'ReferralRounds',version:3,exported:Date.now(),visited,notes,edits,staff});shareOrDownload('ReferralRounds-Backup-'+stamp()+'.json',data,'application/json');}
+function doBackup(){const data=JSON.stringify({app:'ReferralRounds',version:4,exported:Date.now(),visited,notes,edits,staff,prospects,liaisonName});shareOrDownload('ReferralRounds-Backup-'+stamp()+'.json',data,'application/json');}
 document.getElementById('restorefile').addEventListener('change',e=>{
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -831,8 +856,8 @@ document.getElementById('restorefile').addEventListener('change',e=>{
       if(d.app!=='ReferralRounds'||!d.notes||!d.visited)throw 0;
       const nN=Object.keys(d.notes).length,nV=Object.keys(d.visited).length;
       if(confirm('Restore '+nV+' visited marks and notes for '+nN+' providers? This replaces what is on this device now.')){
-        visited=d.visited;notes=d.notes;edits=d.edits||{};staff=d.staff||{};
-        save();saveN();saveE();saveS();rebuildIndex();tally();closeSheet();render();
+        visited=d.visited;notes=d.notes;edits=d.edits||{};staff=d.staff||{};prospects=d.prospects||[];if(d.liaisonName){liaisonName=d.liaisonName;localStorage.setItem('refrounds_name',liaisonName);}
+        save();saveN();saveE();saveS();saveProspects();composeProviders();rebuildIndex();tally();closeSheet();render();
         alert('Backup restored.');
       }
     }catch(err){alert('That file is not a Referral Rounds backup.');}
