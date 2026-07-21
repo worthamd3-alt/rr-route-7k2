@@ -439,8 +439,12 @@ function renderCity(){
     list.forEach(p=>{ const k=clinicKey(p); (groups[k]=groups[k]||[]).push(p); });
     const ordered=Object.values(groups).map(g=>{
       g.sort((a,b)=>b.count-a.count);
-      return {g, top:g[0].count, addr:(eff(g[0]).street||'\uffff')};
-    }).sort((x,y)=>x.addr.localeCompare(y.addr)||y.top-x.top);
+      const raw=(eff(g[0]).street||'').trim();
+      const m=raw.match(/^\s*(\d+)/);                    // leading house number
+      const num=m?parseInt(m[1],10):Number.MAX_SAFE_INTEGER;
+      const st=normAddr(raw.replace(/^\s*\d+\s*/,'')); // street name normalized (Rd/Road, St/Street)
+      return {g, top:g[0].count, st:(st||'\uffff'), num};
+    }).sort((x,y)=>x.num-y.num||x.st.localeCompare(y.st)||y.top-x.top);
     list=[].concat(...ordered.map(o=>o.g));
   } else {
     list.sort((a,b)=>b.count-a.count);
