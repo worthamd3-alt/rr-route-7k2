@@ -75,6 +75,10 @@ main{padding:6px 14px 40px;}
 .prog{flex:1;height:7px;background:var(--line);border-radius:99px;overflow:hidden;}
 .prog i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .35s;}
 .dstat{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.bkbanner{display:flex;align-items:center;gap:11px;background:#fdf3e0;border:1px solid #e8d6ae;border-radius:12px;padding:11px 13px;margin:0 0 14px;}
+.bktext{flex:1;font-size:13px;line-height:1.4;color:#5c4a24;}
+.bktext b{color:#3d3216;}
+.bkbtn{font:inherit;font-size:13.5px;font-weight:700;padding:9px 14px;border-radius:10px;border:none;background:var(--gold);color:#fff;cursor:pointer;white-space:nowrap;}
 .sortrow{display:flex;align-items:center;gap:7px;margin:0 0 12px;flex-wrap:wrap;}
 .sortlbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;}
 .sortbtn{font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;}
@@ -270,12 +274,67 @@ if(!Object.keys(prevCounts).length){ BAKED_PROVIDERS.forEach(p=>prevCounts[p.id]
 const MIN_PRIOR=2;
 let liaisonName=localStorage.getItem('refrounds_name')||'';
 let hideDone=false, view={mode:'home'}, q='';
-const save=()=>localStorage.setItem(LS,JSON.stringify(visited));
-const saveN=()=>localStorage.setItem(LSN,JSON.stringify(notes));
-const saveE=()=>localStorage.setItem(LSE,JSON.stringify(edits));
-const saveS=()=>localStorage.setItem(LSS,JSON.stringify(staff));
+const save=()=>{localStorage.setItem(LS,JSON.stringify(visited));mirror();};
+const saveN=()=>{localStorage.setItem(LSN,JSON.stringify(notes));mirror();};
+const saveE=()=>{localStorage.setItem(LSE,JSON.stringify(edits));mirror();};
+const saveS=()=>{localStorage.setItem(LSS,JSON.stringify(staff));mirror();};
+
+/* ---- safety net: keep a second copy in IndexedDB ----
+   localStorage can be cleared by iOS without warning. IndexedDB is a separate
+   store, so a mirror there often survives when localStorage does not. */
+let _idb=null, _mirrorTimer=null;
+function idb(){
+  if(_idb)return Promise.resolve(_idb);
+  return new Promise(res=>{
+    try{
+      const rq=indexedDB.open('refrounds_safety',1);
+      rq.onupgradeneeded=()=>{ const db=rq.result; if(!db.objectStoreNames.contains('kv'))db.createObjectStore('kv'); };
+      rq.onsuccess=()=>{_idb=rq.result;res(_idb);};
+      rq.onerror=()=>res(null);
+    }catch(e){res(null);}
+  });
+}
+function snapshot(){
+  return {app:'ReferralRounds',version:4,saved:Date.now(),visited,notes,edits,staff,prospects,liaisonName};
+}
+function mirror(){ // debounced so rapid taps don't thrash
+  clearTimeout(_mirrorTimer);
+  _mirrorTimer=setTimeout(async()=>{
+    try{
+      const db=await idb(); if(!db)return;
+      const tx=db.transaction('kv','readwrite');
+      tx.objectStore('kv').put(JSON.stringify(snapshot()),'state');
+    }catch(e){}
+  },400);
+}
+function readMirror(){
+  return new Promise(async res=>{
+    try{
+      const db=await idb(); if(!db)return res(null);
+      const rq=db.transaction('kv','readonly').objectStore('kv').get('state');
+      rq.onsuccess=()=>{ try{res(rq.result?JSON.parse(rq.result):null);}catch(e){res(null);} };
+      rq.onerror=()=>res(null);
+    }catch(e){res(null);}
+  });
+}
+/* On boot: if local data is empty but the mirror has work in it, offer to recover. */
+async function checkRecovery(){
+  const empty=!Object.keys(visited).length && !Object.keys(notes).length;
+  if(!empty)return;
+  const m=await readMirror();
+  if(!m)return;
+  const v=Object.keys(m.visited||{}).length, n=Object.keys(m.notes||{}).length;
+  if(!v && !n)return;
+  const when=m.saved?new Date(m.saved).toLocaleDateString():'earlier';
+  if(confirm('Your saved work looks like it was cleared by the browser.\n\nA safety copy from '+when+' was found with '+v+' visits and notes for '+n+' providers.\n\nRestore it now?')){
+    visited=m.visited||{}; notes=m.notes||{}; edits=m.edits||{}; staff=m.staff||{}; prospects=m.prospects||[];
+    if(m.liaisonName){liaisonName=m.liaisonName;localStorage.setItem('refrounds_name',liaisonName);}
+    save();saveN();saveE();saveS();saveProspects();composeProviders();rebuildIndex();tally();render();
+checkRecovery();
+  }
+}
 let byId={}; function rebuildById(){byId={};PROVIDERS.forEach(p=>byId[p.id]=p);}
-const saveProspects=()=>localStorage.setItem('refrounds_prospects_v1',JSON.stringify(prospects));
+const saveProspects=()=>{localStorage.setItem('refrounds_prospects_v1',JSON.stringify(prospects));mirror();};
 function composeProviders(){
   const baseIds=new Set(baseProviders.map(p=>p.id));
   const before=prospects.length;
@@ -416,7 +475,7 @@ function renderHome(){
     }
   }
   if(!names.length){main.innerHTML='<div class="empty">No matches. Try another name or city.</div>';return;}
-  let h=q?'':'<div class="hint">Tap a city to see who to call on while you\'re there.</div>';
+  let h=q?'':backupBanner()+'<div class="hint">Tap a city to see who to call on while you\'re there.</div>';
   if(!q)h+='<button class="addlead" onclick="openProspect(\'\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add a prospect</button>';
   h+=names.map(c=>{
     const s=cityStats(c);
@@ -850,7 +909,20 @@ function openDataSheet(){
   o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
 }
 function doCallLog(){shareOrDownload('ReferralRounds-CallLog-'+stamp()+'.txt',buildCallLog(),'text/plain');}
-function doBackup(){const data=JSON.stringify({app:'ReferralRounds',version:4,exported:Date.now(),visited,notes,edits,staff,prospects,liaisonName});shareOrDownload('ReferralRounds-Backup-'+stamp()+'.json',data,'application/json');}
+function doBackup(){const data=JSON.stringify(snapshot());localStorage.setItem('refrounds_lastbackup',String(Date.now()));shareOrDownload('ReferralRounds-Backup-'+stamp()+'.json',data,'application/json');render();}
+function daysSinceBackup(){
+  const t=+localStorage.getItem('refrounds_lastbackup')||0;
+  if(!t)return null;
+  return Math.floor((Date.now()-t)/86400000);
+}
+function backupBanner(){
+  const work=Object.keys(visited).length+Object.keys(notes).length;
+  if(!work)return '';
+  const d=daysSinceBackup();
+  if(d===null) return `<div class="bkbanner"><div class="bktext"><b>Your work isn\u2019t backed up yet.</b> Phone storage can be cleared without warning \u2014 save a backup file now.</div><button class="bkbtn" onclick="doBackup()">Back up</button></div>`;
+  if(d>=7) return `<div class="bkbanner"><div class="bktext"><b>Last backup: ${d} days ago.</b> Worth saving a fresh one.</div><button class="bkbtn" onclick="doBackup()">Back up</button></div>`;
+  return '';
+}
 document.getElementById('restorefile').addEventListener('change',e=>{
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -1022,7 +1094,19 @@ function handleImport(file){
   r.readAsArrayBuffer(file);
 }
 document.getElementById('importfile').addEventListener('change',e=>{ if(e.target.files[0]) handleImport(e.target.files[0]); e.target.value=''; });
-function openImport(){ closeSheet(); document.getElementById('importfile').click(); }
+function openImport(){
+  closeSheet();
+  const work=Object.keys(visited).length+Object.keys(notes).length;
+  const d=daysSinceBackup();
+  if(work && (d===null||d>=1)){
+    if(confirm('Before loading new data, save a backup of your current work?\n\nYour notes and visits are kept during import, but a backup is your safety net.')){
+      doBackup();
+      alert('Backup saved. Tap \u201cLoad or replace data\u201d again to continue with the import.');
+      return;
+    }
+  }
+  document.getElementById('importfile').click();
+}
 
 </script>
 </body>
