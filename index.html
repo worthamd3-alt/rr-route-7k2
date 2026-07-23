@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="RR Demo">
+<title>Referral Rounds — Demo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta name="robots" content="noindex, nofollow">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAE70lEQVR4nO3cMXLbRgCFYUjj1q2L3CNdZnKK1D6Ai4wrn8GVJ4UOoDqnyEy63COFWx/AaUxHokkRC+wugLff15uEwV/PK8nk3bQTr9+9/br1NbDOl4fHu62vYbMLEHC+LQLv+oQiHlevuJs/iYg51zLuZg8sZG5pEXb1BxQypWqGfV/rgaZJzCxTs5sqXxlCppa1a716ocVMTWt7WhW0mGlhTVeL5l3I9FJ6BCleaDHTU2lvRUGLmS2UdDc7aDGzpbn9Vf05NGxtVtDWmT2Y0+HNoMXMntzq8cWgxcwevdSlMzRRrgZtndmza31eDFrMHMGlTh05iPJD0NaZIznv1UIT5VnQ1pkjetqthSaKoInyPWjHDY7s1K+FJoqgiXI3TY4b5LDQRBE0UQRNlHvnZ5JYaKK82voCjuzPn/5p9ti//ftzs8dOJugFWoZ8/hzCLuPIUahHzFs+39EJusBWcYl6PkETRdAzbb2SWz//UQiaKIImiqCJImiiDPmLlc8fPxX/mb/++KXBlZRZct1vPrxvcCX7NVTQS4I4utPfeZSwhwh6xJDPjRJ2/BlazM+l34/ooNNfvKWS70ts0MkvWg2p9yc26Np+/f3voZ//KCKDTl2f2hLvU2TQrWy1ktZ5vrigW69O77haP1/aSg/xc+jaTpG1/O2hVV5G0CuIbn/ijhyMTdBEETRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETRdBEEfTBpX/ORilBH9gpZlH/T9AHdR7xmw/vhT0JOs7oUQv6gG5FO/JaC/pgSkIdMWpBH0hpoGkfUTCHoA9CzPMImiiCPgDrPJ+gd07MZQS9Y2IuJ+idEvMygiaKoHfIOi8n6J0R8zqC3hExryfonRBzHYImiqB3wDrXI+iNibkuQV/R4/8Si7k+QV/Q482nYm5D0GcuvfmU4xD0E9firR21dW5H0N/MeeNpj+c5J+Yygp7mR7Y2ajG3N3zQpZEtjVrMfQwddK846WfooNesYMvPx7DOyw0d9DS1j1rMfQ0f9DS1i1rM/Qn6m9pRi3kbgn6i15madgR9pkbU1nk7gr6g51KLuS5BX9EjNDHXJ+gXtAxOzG0I+gbhHYugZ6gdtS+SdgQ9U60IxdyWoAusjVHM7Qm60NIoxdyHoBcQ534JeqGSqH0B9CPoFeaEKua+BL3SKdjzcD9//CTmDbza+gISXIua/iw0UQRNFEETRdBEETRRBE0UQRNF0EQRNFEETRRBE0XQRIkL2kdylUm7X3FBM7bIoNNWp5XE+xQZNOOKDTpxfWpKvT+xQU9T7ou2VvJ9iQ56mrJfvCXS78fd63dvv259Eb2M/J6/9JBPhgr6ZKSwRwn5ZMigyRV/hmYsgiaKoIkiaKIImij3Xx4e77a+CKjFQhNF0EQRNFHup2manKNJ8OXh8c5CE0XQRPketGMHR3bq10ITRdBEeRa0YwdH9LRbC02UH4K20hzJea8WmigXg7bSHMGlTq8utKjZs2t9OnIQ5cWgrTR79FKXNxda1OzJrR5nHTlEzR7M6dAZmiizg7bSbGluf0ULLWq2UNJd8ZFD1PRU2tuqOH1yKa0sHc5V3xRaa1pY09Xqn3KImprW9lQ1RkcQlqo1jFV/Dm2tWaJmN80CtNbc0mIAmy+qsDnX8l/yrkcEcY+r13F0szOvuPNt8T3Vf0RItDILSLUyAAAAAElFTkSuQmCC">
+<style>
+:root{
+  --paper:#f7f4ee; --card:#fffdf9; --ink:#1c2826; --muted:#6f7d79;
+  --line:#e4ddd0; --accent:#0d6b5f; --accent-soft:#dcefe9; --gold:#b8852a;
+  --done:#9aa6a2; --shadow:0 1px 2px rgba(28,40,38,.06),0 4px 16px rgba(28,40,38,.06);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif;
+  background:var(--paper); color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.wrap{max-width:540px;margin:0 auto;}
+/* header */
+header{
+  position:sticky;top:0;z-index:20;
+  background:linear-gradient(180deg,var(--paper) 70%,rgba(247,244,238,0));
+  padding:calc(env(safe-area-inset-top) + 14px) 18px 8px;
+}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.brand h1{
+  font-family:ui-serif,"New York",Georgia,"Times New Roman",serif;font-weight:600;font-size:25px;letter-spacing:-.02em;
+  margin:0;line-height:1;
+}
+.brand .dot{color:var(--accent);}
+.tally{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.tally b{color:var(--accent);}
+.search{position:relative;margin-top:12px;}
+.search input{
+  width:100%;border:1.5px solid var(--line);background:var(--card);
+  border-radius:13px;padding:13px 14px 13px 40px;font-size:16px;font-family:inherit;
+  color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;
+}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);}
+main{padding:6px 14px 40px;}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin:4px 0 14px;line-height:1.5;}
+/* city cards */
+.city{
+  display:flex;align-items:center;gap:14px;background:var(--card);
+  border:1px solid var(--line);border-radius:16px;padding:15px 16px;margin-bottom:10px;
+  box-shadow:var(--shadow);cursor:pointer;transition:transform .12s,border-color .12s;
+}
+.city:active{transform:scale(.985);border-color:var(--accent);}
+.city .meta{flex:1;min-width:0;}
+.city .name{font-family:ui-serif,"New York",Georgia,"Times New Roman",serif;font-size:19px;font-weight:600;letter-spacing:-.01em;}
+.city .sub{font-size:12.5px;color:var(--muted);margin-top:3px;font-weight:500;}
+.ring{position:relative;width:46px;height:46px;flex:none;}
+.ring svg{transform:rotate(-90deg);}
+.ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--accent);}
+.chev{color:var(--line);flex:none;}
+/* detail */
+.back{
+  display:inline-flex;align-items:center;gap:6px;background:none;border:none;
+  color:var(--accent);font-family:inherit;font-weight:600;font-size:14.5px;
+  padding:4px 0;margin:2px 0 8px;cursor:pointer;
+}
+.dtitle{font-family:ui-serif,"New York",Georgia,"Times New Roman",serif;font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0;}
+.dbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 4px;}
+.prog{flex:1;height:7px;background:var(--line);border-radius:99px;overflow:hidden;}
+.prog i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .35s;}
+.dstat{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.bkbanner{display:flex;align-items:center;gap:11px;background:#fdf3e0;border:1px solid #e8d6ae;border-radius:12px;padding:11px 13px;margin:0 0 14px;}
+.bktext{flex:1;font-size:13px;line-height:1.4;color:#5c4a24;}
+.bktext b{color:#3d3216;}
+.bkbtn{font:inherit;font-size:13.5px;font-weight:700;padding:9px 14px;border-radius:10px;border:none;background:var(--gold);color:#fff;cursor:pointer;white-space:nowrap;}
+.sortrow{display:flex;align-items:center;gap:7px;margin:0 0 12px;flex-wrap:wrap;}
+.sortlbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;}
+.sortbtn{font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;}
+.sortbtn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+.toolrow{display:flex;align-items:center;justify-content:space-between;margin:14px 0 10px;}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none;}
+.sw{width:38px;height:22px;border-radius:99px;background:var(--line);position:relative;transition:background .2s;flex:none;}
+.sw i{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;}
+.toggle.on .sw{background:var(--accent);}
+.toggle.on .sw i{transform:translateX(16px);}
+.reset{background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+/* provider row */
+.prov{
+  display:flex;align-items:flex-start;gap:13px;background:var(--card);
+  border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:9px;
+  box-shadow:var(--shadow);transition:opacity .2s,background .2s;
+}
+.prov.done{background:#f4f6f3;}
+.check{
+  width:27px;height:27px;border-radius:50%;border:2px solid var(--line);
+  flex:none;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,border-color .15s;background:#fff;
+}
+.check svg{opacity:0;transform:scale(.5);transition:.15s;color:#fff;}
+.prov.done .check{background:var(--accent);border-color:var(--accent);}
+.prov.done .check svg{opacity:1;transform:scale(1);}
+.body{flex:1;min-width:0;cursor:pointer;}
+.pname{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.25;}
+.prov.done .pname{color:var(--ink);}
+.badges{display:flex;align-items:center;gap:7px;margin:5px 0 2px;flex-wrap:wrap;}
+.tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.02em;}
+.tag.type{background:var(--accent-soft);color:var(--accent);}
+.tag.ref{background:#f6ecd6;color:var(--gold);}
+.addr{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4;}
+.pin{
+  flex:none;width:40px;height:40px;border-radius:11px;background:var(--accent-soft);
+  display:flex;align-items:center;justify-content:center;color:var(--accent);
+  text-decoration:none;margin-top:1px;transition:transform .12s;
+}
+.pin:active{transform:scale(.9);}
+.pincol{display:flex;flex-direction:column;gap:8px;flex:none;}
+.pin.call{background:var(--accent);color:#fff;}
+.sact svg{flex:none;}
+.sheet-phone{margin:8px 2px 0;font-size:15px;font-weight:600;}
+.sheet-phone a{color:var(--accent);text-decoration:none;}
+.sheet-fax{margin:4px 2px 0;font-size:14px;font-weight:600;color:var(--muted);}
+.edit-btn{display:inline-flex;align-items:center;gap:7px;margin:16px 0 2px;background:none;border:none;color:var(--accent);font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;padding:4px 0;}
+.ed-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:14px 2px 5px;letter-spacing:.02em;}
+.ed-input{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:13px;font-size:16px;font-family:inherit;color:var(--ink);outline:none;}
+.ed-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.ed-actions{display:flex;gap:10px;margin-top:22px;}
+.ed-cancel{flex:1;padding:13px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;}
+.ed-save{flex:2;padding:13px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+.notebadge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:2px 7px;border-radius:99px;}
+.sheet-overlay{position:fixed;inset:0;z-index:50;background:rgba(28,40,38,.34);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .22s;display:flex;align-items:flex-end;justify-content:center;}
+.sheet-overlay.show{opacity:1;pointer-events:auto;}
+.sheet{width:100%;max-width:540px;background:var(--paper);border-radius:22px 22px 0 0;padding:8px 18px calc(env(safe-area-inset-bottom) + 22px);max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform .26s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 40px rgba(28,40,38,.22);}
+.sheet-overlay.show .sheet{transform:translateY(0);}
+.sheet-grip{width:38px;height:4px;border-radius:99px;background:var(--line);margin:8px auto 12px;}
+.sheet-head{display:flex;align-items:flex-start;gap:12px;}
+.sheet-name{font-family:ui-serif,"New York",Georgia,"Times New Roman",serif;font-size:23px;font-weight:600;letter-spacing:-.02em;line-height:1.1;}
+.sheet-meta{font-size:13px;color:var(--muted);font-weight:600;margin-top:5px;}
+.sheet-x{flex:none;width:32px;height:32px;border-radius:50%;border:none;background:var(--card);color:var(--muted);font-size:15px;cursor:pointer;border:1px solid var(--line);}
+.sheet-actions{display:flex;gap:9px;margin:16px 0 4px;}
+.sact{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;}
+.sact.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.snapline{font-size:13.5px;font-weight:650;color:var(--accent);margin:11px 2px 0;display:flex;align-items:center;gap:7px;}
+.snapline:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.snap-dim{color:var(--muted);}
+.snap-dim:before{background:var(--muted);}
+.sheet-addr{font-size:13px;color:var(--muted);margin:12px 2px 0;line-height:1.4;}
+.note-input{margin:18px 0 6px;}
+.note-input textarea{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:13px;padding:13px;font-size:16px;font-family:inherit;color:var(--ink);outline:none;resize:vertical;line-height:1.45;}
+.note-input textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.note-save{margin-top:9px;width:100%;padding:13px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+.note-save:active{opacity:.85;}
+.note-list{margin-top:18px;border-top:1px solid var(--line);padding-top:6px;}
+.note-empty{text-align:center;color:var(--muted);font-size:13px;padding:22px 10px;line-height:1.5;}
+.note-item{padding:14px 0;border-bottom:1px solid var(--line);position:relative;}
+.note-date{font-size:11.5px;font-weight:700;letter-spacing:.03em;color:var(--accent);text-transform:uppercase;}
+.note-text{font-size:14.5px;line-height:1.5;margin-top:6px;white-space:pre-wrap;word-wrap:break-word;padding-right:54px;}
+.note-del{position:absolute;top:14px;right:0;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px;line-height:1.6;}
+.sechead{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 4px 8px;}
+footer{text-align:center;font-size:11px;color:var(--muted);padding:8px 20px 28px;line-height:1.6;}
+.exportbtn{display:inline-flex;align-items:center;gap:7px;margin:4px auto 14px;background:var(--card);border:1.5px solid var(--line);color:var(--accent);font-family:inherit;font-size:13.5px;font-weight:700;padding:10px 16px;border-radius:12px;cursor:pointer;box-shadow:var(--shadow);}
+.exportbtn:active{transform:scale(.97);}
+.drow{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:15px 16px;margin-bottom:10px;cursor:pointer;font-family:inherit;color:var(--ink);}
+.drow:active{border-color:var(--accent);}
+.drow .di{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none;}
+.drow .dt{flex:1;min-width:0;}
+.drow .dt b{display:block;font-size:15px;font-weight:700;}
+.drow .dt span{font-size:12.5px;color:var(--muted);}
+.sheet-sub{font-size:12.5px;color:var(--muted);margin:2px 0 16px;line-height:1.5;}
+
+/* PIN lock */
+#lock{position:fixed;inset:0;z-index:100;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px 30px calc(env(safe-area-inset-bottom) + 30px);text-align:center;}
+#lock.hidden{display:none;}
+.lk-icon{width:62px;height:62px;border-radius:16px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;margin-bottom:18px;}
+.lk-title{font-family:ui-serif,"New York",Georgia,serif;font-size:26px;font-weight:600;letter-spacing:-.02em;}
+.lk-sub{font-size:14px;color:var(--muted);margin:8px 0 26px;line-height:1.5;max-width:300px;}
+.dots{display:flex;gap:15px;margin-bottom:30px;height:16px;}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);transition:background .12s;}
+.dots i.on{background:var(--accent);}
+.dots.bad{animation:shake .35s;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:280px;}
+.pad button{height:64px;border:none;border-radius:16px;background:var(--card);box-shadow:var(--shadow);font-family:inherit;font-size:25px;font-weight:500;color:var(--ink);cursor:pointer;}
+.pad button:active{background:var(--accent-soft);}
+.pad button.blank{background:none;box-shadow:none;cursor:default;}
+.pad button.fn{font-size:14px;font-weight:600;color:var(--muted);}
+.lk-skip{margin-top:24px;background:none;border:none;color:var(--muted);font-family:inherit;font-size:13.5px;font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+
+.staff-wrap{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+.staff-head{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.staff-shared{font-size:11px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);opacity:.8}
+.staff-item{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 84px 10px 12px;margin-bottom:8px}
+.staff-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.staff-name{font-weight:650;font-size:15px}
+.staff-title{font-size:12px;color:var(--gold);background:#f6ecd6;padding:2px 8px;border-radius:999px;font-weight:600}
+.staff-note{font-size:14px;color:var(--muted);margin-top:4px;line-height:1.35}
+.staff-add{width:100%;background:none;border:1px dashed var(--line);color:var(--accent);font:inherit;font-weight:600;font-size:15px;padding:11px;border-radius:12px;margin-top:2px}
+.staff-form{margin-top:6px}
+.staff-form .ed-input{margin-bottom:8px}
+
+.welcome{position:fixed;inset:0;z-index:60;background:var(--paper);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto;}
+.welcome.hidden{display:none;}
+.wcard{max-width:400px;width:100%;text-align:center;}
+.wlogo{font-family:ui-serif,"New York",Georgia,serif;font-weight:600;font-size:34px;letter-spacing:-.02em;margin-bottom:14px;}
+.wlogo .dot{color:var(--accent);}
+.wtag{font-size:15.5px;color:var(--muted);line-height:1.5;margin-bottom:26px;}
+.wbtn{display:block;width:100%;border-radius:13px;padding:15px;font:inherit;font-size:16px;font-weight:650;cursor:pointer;border:1.5px solid var(--line);margin-bottom:12px;}
+.wprimary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.wprimary:active{transform:scale(.99);}
+.wghost{background:var(--card);color:var(--accent);}
+.wnote{font-size:12.5px;color:var(--muted);line-height:1.45;margin:-2px 0 20px;}
+.wstatus{font-size:13.5px;color:var(--ink);margin-top:14px;line-height:1.5;min-height:18px;}
+.rep-btns{margin-top:14px;}
+.rep-btns .wbtn{margin-bottom:10px;}
+.wfoot{font-size:11.5px;color:var(--muted);margin-top:22px;opacity:.85;}
+
+.tag.prospect{background:#efe7f7;color:#6b4a9a;}
+.tag.ref.good{background:#e3f0e8;color:#2f7d55;}
+.tag.ref.slow{background:#f7ded9;color:#b23b3b;}
+.tag.newprov{background:#e0eef1;color:#2b6d7a;}
+.trendkey{font-family:inherit;font-size:11px;color:var(--muted);margin:2px 0 2px;display:flex;gap:12px;flex-wrap:wrap;}
+.trendkey b{font-weight:600;}
+.trendkey .u{color:#2f7d55;font-weight:600;}.trendkey .d{color:#b23b3b;font-weight:600;}
+.addlead{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--card);border:1.5px dashed var(--line);color:var(--accent);font:inherit;font-weight:650;font-size:15px;padding:13px;border-radius:14px;margin:2px 0 14px;cursor:pointer;}
+.addlead:active{transform:scale(.99);}
+.addlead.citylead{margin:10px 0 4px;}
+.removelead{width:100%;margin-top:14px;background:none;border:none;color:#b23b3b;font:inherit;font-weight:600;font-size:14.5px;padding:8px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="lock">
+  <div class="lk-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+  <div class="lk-title" id="lkTitle">Referral Rounds</div>
+  <div class="lk-sub" id="lkSub">Set a 4-digit PIN to lock this app.</div>
+  <div class="dots" id="lkDots"><i></i><i></i><i></i><i></i></div>
+  <div class="pad" id="lkPad"></div>
+  <button class="lk-skip" id="lkSkip">Skip — no PIN</button>
+</div>
+<input type="file" id="importfile" accept=".xlsx,.xls,.csv" style="display:none">
+<div id="welcome" class="welcome hidden">
+  <div class="wcard">
+    <div class="wlogo">Referral&nbsp;Rounds<span class="dot">.</span></div>
+    <div class="wtag">The dead-simple visit tracker for physician liaisons. Your referring providers, sorted by city and volume, on your phone.</div>
+    <button class="wbtn wprimary" onclick="document.getElementById('importfile').click()">Upload your CRM export</button>
+    <div class="wnote">Export your referring-provider report to Excel (ModMed and most systems work), then choose the file here.</div>
+    <button class="wbtn wghost" onclick="useSample()">Explore with sample data</button>
+    <div id="impStatus" class="wstatus"></div>
+    <div class="wfoot">Everything stays on this device. Nothing is uploaded to any server.</div>
+  </div>
+</div>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <h1>Referral Rounds<span class="dot">.</span></h1>
+    <div class="tally" id="tally"></div>
+  </div>
+  <div class="search">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+    <input id="q" type="search" placeholder="Search city or provider" autocomplete="off">
+  </div>
+</header>
+<main id="main"></main>
+<div style="text-align:center"><button class="exportbtn" id="exportbtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0-12 4 4m-4-4-4 4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Export &amp; back up</button></div>
+<footer>Visited check-offs and notes are saved on this device only &mdash; nothing leaves your phone.<br>Referral counts reflect your last CRM export.</footer>
+</div>
+<input type="file" id="restorefile" accept=".json,application/json" style="display:none">
+<div class="sheet-overlay" id="sheet"></div>
+<script>
+let baseProviders=JSON.parse(localStorage.getItem('rrdemo_data_v1')||'[]');
+let prospects=JSON.parse(localStorage.getItem('rrdemo_prospects_v1')||'[]');
+let PROVIDERS=[];
+const SAMPLE_DATA=[{"id":"hazelbramble__ashcroft","name":"Hazel Bramble","type":"PA-C","city":"Ashcroft","street":"180 Cedar Point Rd","suite":"","zip":"72131","state":"AR","phone":"(479) 555-8962","fax":"","count":22,"mapq":"180 Cedar Point Rd Ashcroft, AR 72131"},{"id":"grantrossiter__ashcroft","name":"Grant Rossiter","type":"","city":"Ashcroft","street":"806 Overton Blvd","suite":"","zip":"72131","state":"AR","phone":"(479) 555-6107","fax":"(479) 555-7118","count":16,"mapq":"806 Overton Blvd Ashcroft, AR 72131"},{"id":"yosefellison__ashcroft","name":"Yosef Ellison","type":"FNP","city":"Ashcroft","street":"662 Magnolia Dr","suite":"","zip":"72131","state":"AR","phone":"(870) 555-9645","fax":"","count":12,"mapq":"662 Magnolia Dr Ashcroft, AR 72131"},{"id":"rheaziegler__ashcroft","name":"Rhea Ziegler","type":"","city":"Ashcroft","street":"545 Magnolia Dr","suite":"Suite 102","zip":"72131","state":"AR","phone":"(501) 555-6310","fax":"(501) 555-6947","count":7,"mapq":"545 Magnolia Dr Suite 102 Ashcroft, AR 72131"},{"id":"owenalcott__ashcroft","name":"Owen Alcott","type":"","city":"Ashcroft","street":"545 Magnolia Dr","suite":"Suite 100","zip":"72131","state":"AR","phone":"(479) 555-5315","fax":"","count":4,"mapq":"545 Magnolia Dr Suite 100 Ashcroft, AR 72131"},{"id":"quinndevereux__ashcroft","name":"Quinn Devereux","type":"","city":"Ashcroft","street":"545 Magnolia Dr","suite":"Suite 101","zip":"72131","state":"AR","phone":"(870) 555-9317","fax":"(501) 555-7126","count":4,"mapq":"545 Magnolia Dr Suite 101 Ashcroft, AR 72131"},{"id":"calebingram__cedarfalls","name":"Caleb Ingram","type":"PA-C","city":"Cedar Falls","street":"132 Sycamore Ln","suite":"Suite 100","zip":"72120","state":"AR","phone":"(479) 555-6155","fax":"(870) 555-7482","count":44,"mapq":"132 Sycamore Ln Suite 100 Cedar Falls, AR 72120"},{"id":"owenellison__cedarfalls","name":"Owen Ellison","type":"DO","city":"Cedar Falls","street":"132 Sycamore Ln","suite":"Suite 101","zip":"72120","state":"AR","phone":"(479) 555-9830","fax":"(479) 555-8019","count":31,"mapq":"132 Sycamore Ln Suite 101 Cedar Falls, AR 72120"},{"id":"umarfoster__cedarfalls","name":"Umar Foster","type":"","city":"Cedar Falls","street":"532 Tanglewood Dr","suite":"","zip":"72120","state":"AR","phone":"(501) 555-7304","fax":"(870) 555-9669","count":7,"mapq":"532 Tanglewood Dr Cedar Falls, AR 72120"},{"id":"marcuslarkin__cedarfalls","name":"Marcus Larkin","type":"DO","city":"Cedar Falls","street":"132 Sycamore Ln","suite":"Suite 102","zip":"72120","state":"AR","phone":"(479) 555-9085","fax":"(501) 555-2796","count":4,"mapq":"132 Sycamore Ln Suite 102 Cedar Falls, AR 72120"},{"id":"rheacalloway__cedarfalls","name":"Rhea Calloway","type":"","city":"Cedar Falls","street":"796 Cedar Point Rd","suite":"","zip":"72120","state":"AR","phone":"(479) 555-9797","fax":"(479) 555-6573","count":3,"mapq":"796 Cedar Point Rd Cedar Falls, AR 72120"},{"id":"evanlarkin__danforth","name":"Evan Larkin","type":"","city":"Danforth","street":"350 Sycamore Ln","suite":"","zip":"72160","state":"AR","phone":"(870) 555-3584","fax":"(479) 555-5956","count":31,"mapq":"350 Sycamore Ln Danforth, AR 72160"},{"id":"xenakeller__danforth","name":"Xena Keller","type":"PA-C","city":"Danforth","street":"848 Old Mill Rd","suite":"Suite 101","zip":"72160","state":"AR","phone":"(870) 555-9238","fax":"","count":22,"mapq":"848 Old Mill Rd Suite 101 Danforth, AR 72160"},{"id":"eliseingram__danforth","name":"Elise Ingram","type":"","city":"Danforth","street":"421 Overton Blvd","suite":"","zip":"72160","state":"AR","phone":"(870) 555-7484","fax":"(479) 555-5915","count":16,"mapq":"421 Overton Blvd Danforth, AR 72160"},{"id":"fionabramble__danforth","name":"Fiona Bramble","type":"","city":"Danforth","street":"848 Old Mill Rd","suite":"Suite 102","zip":"72160","state":"AR","phone":"(501) 555-4044","fax":"(501) 555-4853","count":12,"mapq":"848 Old Mill Rd Suite 102 Danforth, AR 72160"},{"id":"danielasterling__danforth","name":"Daniela Sterling","type":"PA-C","city":"Danforth","street":"140 Tanglewood Dr","suite":"","zip":"72160","state":"AR","phone":"(501) 555-7868","fax":"(479) 555-9565","count":9,"mapq":"140 Tanglewood Dr Danforth, AR 72160"},{"id":"karlziegler__danforth","name":"Karl Ziegler","type":"","city":"Danforth","street":"109 Kingfisher Rd","suite":"","zip":"72160","state":"AR","phone":"(479) 555-2638","fax":"(501) 555-9288","count":7,"mapq":"109 Kingfisher Rd Danforth, AR 72160"},{"id":"iandevereux__danforth","name":"Ian Devereux","type":"","city":"Danforth","street":"860 Old Mill Rd","suite":"","zip":"72160","state":"AR","phone":"(501) 555-5462","fax":"(501) 555-6617","count":5,"mapq":"860 Old Mill Rd Danforth, AR 72160"},{"id":"zoeunderwood__danforth","name":"Zoe Underwood","type":"","city":"Danforth","street":"783 Old Mill Rd","suite":"","zip":"72160","state":"AR","phone":"(870) 555-2697","fax":"","count":4,"mapq":"783 Old Mill Rd Danforth, AR 72160"},{"id":"verawhitfield__danforth","name":"Vera Whitfield","type":"","city":"Danforth","street":"848 Old Mill Rd","suite":"Suite 100","zip":"72160","state":"AR","phone":"(501) 555-5861","fax":"(501) 555-9883","count":2,"mapq":"848 Old Mill Rd Suite 100 Danforth, AR 72160"},{"id":"nadianovak__fairview","name":"Nadia Novak","type":"FNP","city":"Fairview","street":"525 Halstead Ave","suite":"","zip":"72199","state":"AR","phone":"(501) 555-7883","fax":"(479) 555-1320","count":31,"mapq":"525 Halstead Ave Fairview, AR 72199"},{"id":"tarabellamy__fairview","name":"Tara Bellamy","type":"","city":"Fairview","street":"324 Magnolia Dr","suite":"Suite 102","zip":"72199","state":"AR","phone":"(479) 555-7991","fax":"","count":22,"mapq":"324 Magnolia Dr Suite 102 Fairview, AR 72199"},{"id":"zoeellison__fairview","name":"Zoe Ellison","type":"","city":"Fairview","street":"324 Magnolia Dr","suite":"Suite 101","zip":"72199","state":"AR","phone":"(479) 555-6198","fax":"","count":16,"mapq":"324 Magnolia Dr Suite 101 Fairview, AR 72199"},{"id":"owenfoster__fairview","name":"Owen Foster","type":"","city":"Fairview","street":"586 Kingfisher Rd","suite":"","zip":"72199","state":"AR","phone":"(870) 555-5050","fax":"","count":7,"mapq":"586 Kingfisher Rd Fairview, AR 72199"},{"id":"yosefziegler__fairview","name":"Yosef Ziegler","type":"","city":"Fairview","street":"741 Overton Blvd","suite":"","zip":"72199","state":"AR","phone":"(870) 555-8206","fax":"(870) 555-4841","count":7,"mapq":"741 Overton Blvd Fairview, AR 72199"},{"id":"karlkeller__fairview","name":"Karl Keller","type":"","city":"Fairview","street":"182 Magnolia Dr","suite":"","zip":"72199","state":"AR","phone":"(501) 555-4788","fax":"(501) 555-4505","count":3,"mapq":"182 Magnolia Dr Fairview, AR 72199"},{"id":"zoewhitfield__fairview","name":"Zoe Whitfield","type":"","city":"Fairview","street":"324 Magnolia Dr","suite":"Suite 100","zip":"72199","state":"AR","phone":"(501) 555-5082","fax":"","count":3,"mapq":"324 Magnolia Dr Suite 100 Fairview, AR 72199"},{"id":"jennavance__kingsley","name":"Jenna Vance","type":"FNP","city":"Kingsley","street":"218 Bristol Way","suite":"Suite 102","zip":"72188","state":"AR","phone":"(479) 555-5844","fax":"(501) 555-7888","count":44,"mapq":"218 Bristol Way Suite 102 Kingsley, AR 72188"},{"id":"nadiacastellano__kingsley","name":"Nadia Castellano","type":"","city":"Kingsley","street":"218 Bristol Way","suite":"Suite 101","zip":"72188","state":"AR","phone":"(870) 555-6143","fax":"(501) 555-5920","count":22,"mapq":"218 Bristol Way Suite 101 Kingsley, AR 72188"},{"id":"blakeziegler__kingsley","name":"Blake Ziegler","type":"NP","city":"Kingsley","street":"330 Overton Blvd","suite":"","zip":"72188","state":"AR","phone":"(501) 555-1400","fax":"(870) 555-2193","count":16,"mapq":"330 Overton Blvd Kingsley, AR 72188"},{"id":"grantnovak__kingsley","name":"Grant Novak","type":"","city":"Kingsley","street":"721 Sycamore Ln","suite":"","zip":"72188","state":"AR","phone":"(870) 555-8238","fax":"(501) 555-9375","count":16,"mapq":"721 Sycamore Ln Kingsley, AR 72188"},{"id":"dereksterling__kingsley","name":"Derek Sterling","type":"MD","city":"Kingsley","street":"218 Bristol Way","suite":"Suite 100","zip":"72188","state":"AR","phone":"(479) 555-8144","fax":"(479) 555-4228","count":9,"mapq":"218 Bristol Way Suite 100 Kingsley, AR 72188"},{"id":"marcusvance__kingsley","name":"Marcus Vance","type":"","city":"Kingsley","street":"278 Tanglewood Dr","suite":"","zip":"72188","state":"AR","phone":"(479) 555-5930","fax":"(501) 555-5978","count":7,"mapq":"278 Tanglewood Dr Kingsley, AR 72188"},{"id":"nadiaunderwood__kingsley","name":"Nadia Underwood","type":"","city":"Kingsley","street":"835 Bristol Way","suite":"","zip":"72188","state":"AR","phone":"(870) 555-7547","fax":"(479) 555-1090","count":3,"mapq":"835 Bristol Way Kingsley, AR 72188"},{"id":"zoeashby__kingsley","name":"Zoe Ashby","type":"","city":"Kingsley","street":"774 Cedar Point Rd","suite":"","zip":"72188","state":"AR","phone":"(870) 555-9445","fax":"(479) 555-6491","count":3,"mapq":"774 Cedar Point Rd Kingsley, AR 72188"},{"id":"hazelholloway__millbrook","name":"Hazel Holloway","type":"MD","city":"Millbrook","street":"562 Cedar Point Rd","suite":"Suite 100","zip":"72145","state":"AR","phone":"(479) 555-4770","fax":"(501) 555-2163","count":44,"mapq":"562 Cedar Point Rd Suite 100 Millbrook, AR 72145"},{"id":"hazelgranger__millbrook","name":"Hazel Granger","type":"FNP","city":"Millbrook","street":"243 Bristol Way","suite":"","zip":"72145","state":"AR","phone":"(501) 555-5563","fax":"(501) 555-8260","count":22,"mapq":"243 Bristol Way Millbrook, AR 72145"},{"id":"coramarsh__millbrook","name":"Cora Marsh","type":"","city":"Millbrook","street":"268 Bristol Way","suite":"","zip":"72145","state":"AR","phone":"(501) 555-7396","fax":"(870) 555-5673","count":12,"mapq":"268 Bristol Way Millbrook, AR 72145"},{"id":"bethanyholloway__millbrook","name":"Bethany Holloway","type":"MD","city":"Millbrook","street":"562 Cedar Point Rd","suite":"Suite 101","zip":"72145","state":"AR","phone":"(870) 555-2160","fax":"(870) 555-8953","count":5,"mapq":"562 Cedar Point Rd Suite 101 Millbrook, AR 72145"},{"id":"danielabramble__millbrook","name":"Daniela Bramble","type":"","city":"Millbrook","street":"653 Halstead Ave","suite":"","zip":"72145","state":"AR","phone":"(501) 555-4872","fax":"(870) 555-8886","count":5,"mapq":"653 Halstead Ave Millbrook, AR 72145"},{"id":"rheaellison__millbrook","name":"Rhea Ellison","type":"","city":"Millbrook","street":"562 Cedar Point Rd","suite":"Suite 102","zip":"72145","state":"AR","phone":"(479) 555-8744","fax":"(870) 555-7669","count":5,"mapq":"562 Cedar Point Rd Suite 102 Millbrook, AR 72145"},{"id":"veraunderwood__millbrook","name":"Vera Underwood","type":"","city":"Millbrook","street":"200 Halstead Ave","suite":"","zip":"72145","state":"AR","phone":"(870) 555-6559","fax":"","count":3,"mapq":"200 Halstead Ave Millbrook, AR 72145"},{"id":"danieladevereux__millbrook","name":"Daniela Devereux","type":"","city":"Millbrook","street":"462 Bristol Way","suite":"","zip":"72145","state":"AR","phone":"(870) 555-8651","fax":"","count":2,"mapq":"462 Bristol Way Millbrook, AR 72145"},{"id":"calebcalloway__rivermont","name":"Caleb Calloway","type":"MD","city":"Rivermont","street":"489 Prairie St","suite":"","zip":"72110","state":"AR","phone":"(870) 555-6977","fax":"(870) 555-4432","count":44,"mapq":"489 Prairie St Rivermont, AR 72110"},{"id":"nadiabramble__rivermont","name":"Nadia Bramble","type":"DO","city":"Rivermont","street":"214 Halstead Ave","suite":"Suite 101","zip":"72110","state":"AR","phone":"(501) 555-9279","fax":"(479) 555-4257","count":44,"mapq":"214 Halstead Ave Suite 101 Rivermont, AR 72110"},{"id":"xenaingram__rivermont","name":"Xena Ingram","type":"DO","city":"Rivermont","street":"214 Halstead Ave","suite":"Suite 100","zip":"72110","state":"AR","phone":"(479) 555-2679","fax":"(479) 555-2424","count":31,"mapq":"214 Halstead Ave Suite 100 Rivermont, AR 72110"},{"id":"ianwhitfield__rivermont","name":"Ian Whitfield","type":"","city":"Rivermont","street":"763 Cedar Point Rd","suite":"","zip":"72110","state":"AR","phone":"(479) 555-3803","fax":"(501) 555-3677","count":16,"mapq":"763 Cedar Point Rd Rivermont, AR 72110"},{"id":"danielacastellano__rivermont","name":"Daniela Castellano","type":"NP","city":"Rivermont","street":"452 Tanglewood Dr","suite":"","zip":"72110","state":"AR","phone":"(870) 555-1711","fax":"(479) 555-3045","count":12,"mapq":"452 Tanglewood Dr Rivermont, AR 72110"},{"id":"yosefashby__rivermont","name":"Yosef Ashby","type":"FNP","city":"Rivermont","street":"448 Prairie St","suite":"","zip":"72110","state":"AR","phone":"(501) 555-4527","fax":"","count":9,"mapq":"448 Prairie St Rivermont, AR 72110"},{"id":"calebrossiter__rivermont","name":"Caleb Rossiter","type":"","city":"Rivermont","street":"733 Sycamore Ln","suite":"","zip":"72110","state":"AR","phone":"(479) 555-4150","fax":"(501) 555-4733","count":7,"mapq":"733 Sycamore Ln Rivermont, AR 72110"},{"id":"marcusingram__rivermont","name":"Marcus Ingram","type":"","city":"Rivermont","street":"755 Old Mill Rd","suite":"","zip":"72110","state":"AR","phone":"(501) 555-6313","fax":"","count":2,"mapq":"755 Old Mill Rd Rivermont, AR 72110"},{"id":"waderossiter__rivermont","name":"Wade Rossiter","type":"FNP","city":"Rivermont","street":"214 Halstead Ave","suite":"Suite 102","zip":"72110","state":"AR","phone":"(479) 555-5557","fax":"","count":2,"mapq":"214 Halstead Ave Suite 102 Rivermont, AR 72110"},{"id":"evanbramble__weston","name":"Evan Bramble","type":"MD","city":"Weston","street":"466 Overton Blvd","suite":"","zip":"72175","state":"AR","phone":"(479) 555-5088","fax":"(870) 555-7658","count":31,"mapq":"466 Overton Blvd Weston, AR 72175"},{"id":"fionasterling__weston","name":"Fiona Sterling","type":"","city":"Weston","street":"371 Halstead Ave","suite":"","zip":"72175","state":"AR","phone":"(501) 555-8119","fax":"(870) 555-8149","count":31,"mapq":"371 Halstead Ave Weston, AR 72175"},{"id":"adriankeller__weston","name":"Adrian Keller","type":"","city":"Weston","street":"749 Prairie St","suite":"Suite 101","zip":"72175","state":"AR","phone":"(479) 555-5291","fax":"(870) 555-8007","count":22,"mapq":"749 Prairie St Suite 101 Weston, AR 72175"},{"id":"adriandevereux__weston","name":"Adrian Devereux","type":"","city":"Weston","street":"749 Prairie St","suite":"Suite 102","zip":"72175","state":"AR","phone":"(501) 555-9938","fax":"(870) 555-3426","count":12,"mapq":"749 Prairie St Suite 102 Weston, AR 72175"},{"id":"xenaellison__weston","name":"Xena Ellison","type":"","city":"Weston","street":"342 Magnolia Dr","suite":"","zip":"72175","state":"AR","phone":"(501) 555-7755","fax":"(479) 555-6442","count":12,"mapq":"342 Magnolia Dr Weston, AR 72175"},{"id":"grantbellamy__weston","name":"Grant Bellamy","type":"","city":"Weston","street":"458 Prairie St","suite":"","zip":"72175","state":"AR","phone":"(501) 555-4652","fax":"(501) 555-7528","count":9,"mapq":"458 Prairie St Weston, AR 72175"},{"id":"iancalloway__weston","name":"Ian Calloway","type":"NP","city":"Weston","street":"459 Old Mill Rd","suite":"","zip":"72175","state":"AR","phone":"(870) 555-9785","fax":"(501) 555-2889","count":7,"mapq":"459 Old Mill Rd Weston, AR 72175"},{"id":"zoevance__weston","name":"Zoe Vance","type":"","city":"Weston","street":"354 Prairie St","suite":"","zip":"72175","state":"AR","phone":"(501) 555-2771","fax":"(501) 555-8711","count":5,"mapq":"354 Prairie St Weston, AR 72175"},{"id":"quinnpruitt__weston","name":"Quinn Pruitt","type":"MD","city":"Weston","street":"749 Prairie St","suite":"Suite 100","zip":"72175","state":"AR","phone":"(501) 555-7939","fax":"","count":2,"mapq":"749 Prairie St Suite 100 Weston, AR 72175"}];
+const LS='rrdemo_visited_v1', LSN='rrdemo_notes_v1', LSE='rrdemo_edits_v1', LSS='rrdemo_staff_v1', LSDATA='rrdemo_data_v1';
+let visited=JSON.parse(localStorage.getItem(LS)||'{}');
+let notes=JSON.parse(localStorage.getItem(LSN)||'{}');
+let edits=JSON.parse(localStorage.getItem(LSE)||'{}');
+let staff=JSON.parse(localStorage.getItem(LSS)||'{}');
+let prevCounts=JSON.parse(localStorage.getItem('rrdemo_prev_v1')||'{}');
+let gainHist=JSON.parse(localStorage.getItem('rrdemo_hist_v1')||'{}');
+const MIN_PRIOR=2;
+let liaisonName=localStorage.getItem('rrdemo_name')||'';
+let hideDone=false, view={mode:'home'}, q='';
+let citySort=localStorage.getItem('rrdemo_sort')||'volume';
+const save=()=>{localStorage.setItem(LS,JSON.stringify(visited));mirror();};
+const saveN=()=>{localStorage.setItem(LSN,JSON.stringify(notes));mirror();};
+const saveE=()=>{localStorage.setItem(LSE,JSON.stringify(edits));mirror();};
+const saveS=()=>{localStorage.setItem(LSS,JSON.stringify(staff));mirror();};
+
+/* ---- safety net: second copy in IndexedDB ---- */
+let _idb=null,_mirrorTimer=null;
+function idb(){
+  if(_idb)return Promise.resolve(_idb);
+  return new Promise(res=>{
+    try{
+      const rq=indexedDB.open('rrdemo_safety',1);
+      rq.onupgradeneeded=()=>{const db=rq.result;if(!db.objectStoreNames.contains('kv'))db.createObjectStore('kv');};
+      rq.onsuccess=()=>{_idb=rq.result;res(_idb);};
+      rq.onerror=()=>res(null);
+    }catch(e){res(null);}
+  });
+}
+function snapshot(){return {app:'ReferralRounds',version:5,saved:Date.now(),visited,notes,edits,staff,prospects,liaisonName,gifts,lunches};}
+function mirror(){
+  clearTimeout(_mirrorTimer);
+  _mirrorTimer=setTimeout(async()=>{
+    try{const db=await idb();if(!db)return;
+      db.transaction('kv','readwrite').objectStore('kv').put(JSON.stringify(snapshot()),'state');
+    }catch(e){}
+  },400);
+}
+function readMirror(){
+  return new Promise(async res=>{
+    try{
+      const db=await idb(); if(!db)return res(null);
+      const rq=db.transaction('kv','readonly').objectStore('kv').get('state');
+      rq.onsuccess=()=>{try{res(rq.result?JSON.parse(rq.result):null);}catch(e){res(null);}};
+      rq.onerror=()=>res(null);
+    }catch(e){res(null);}
+  });
+}
+async function checkRecovery(){
+  const empty=!Object.keys(visited).length && !Object.keys(notes).length
+              && !Object.keys(gifts).length && !Object.keys(lunches).length;
+  if(!empty)return;
+  const m=await readMirror(); if(!m)return;
+  const v=Object.keys(m.visited||{}).length,n=Object.keys(m.notes||{}).length;
+  const gi=Object.keys(m.gifts||{}).length, lu=Object.keys(m.lunches||{}).length;
+  if(!v&&!n&&!gi&&!lu)return;
+  const when=m.saved?new Date(m.saved).toLocaleDateString():'earlier';
+  const bits=[];
+  if(v)bits.push(v+' visits');
+  if(n)bits.push('notes for '+n+' providers');
+  if(gi)bits.push('gifts for '+gi+' providers');
+  if(lu)bits.push('lunches for '+lu+' offices');
+  if(confirm('Your saved work looks like it was cleared by the browser.\n\nA safety copy from '+when+' was found with '+bits.join(', ')+'.\n\nRestore it now?')){
+    visited=m.visited||{};notes=m.notes||{};edits=m.edits||{};staff=m.staff||{};prospects=m.prospects||[];gifts=m.gifts||{};lunches=m.lunches||{};
+    if(m.liaisonName){liaisonName=m.liaisonName;localStorage.setItem('rrdemo_name',liaisonName);}
+    save();saveN();saveE();saveS();saveProspects();saveG();saveL();composeProviders();rebuildIndex();tally();render();
+checkRecovery();
+  }
+}
+let byId={}; function rebuildById(){byId={};PROVIDERS.forEach(p=>byId[p.id]=p);}
+const saveProspects=()=>{localStorage.setItem('rrdemo_prospects_v1',JSON.stringify(prospects));mirror();};
+let gifts=JSON.parse(localStorage.getItem('rrdemo_gifts_v1')||'{}');
+let lunches=JSON.parse(localStorage.getItem('rrdemo_lunches_v1')||'{}');
+const saveG=()=>{localStorage.setItem('rrdemo_gifts_v1',JSON.stringify(gifts));mirror();};
+const saveL=()=>{localStorage.setItem('rrdemo_lunches_v1',JSON.stringify(lunches));mirror();};
+const yearOf=ts=>new Date(ts).getFullYear();
+const money=n=>'$'+(Math.round(n*100)/100).toFixed(2).replace(/\.00$/,'');
+function giftTotal(id,yr){return (gifts[id]||[]).filter(g=>yearOf(g.ts)===yr).reduce((a,g)=>a+(+g.cost||0),0);}
+function lunchTotal(k,yr){return (lunches[k]||[]).filter(g=>yearOf(g.ts)===yr).reduce((a,g)=>a+(+g.cost||0),0);}
+function composeProviders(){
+  const baseIds=new Set(baseProviders.map(p=>p.id));
+  const before=prospects.length;
+  prospects=prospects.filter(p=>!baseIds.has(p.id)); // graduated leads drop out; real record takes over
+  if(prospects.length!==before)saveProspects();
+  PROVIDERS=baseProviders.concat(prospects);
+  rebuildById();
+}
+composeProviders();
+const main=document.getElementById('main');
+const norm=s=>(s||'').toLowerCase();
+
+// effective provider = baked data with the user's edits merged on top
+function eff(p){
+  const e=edits[p.id]; if(!e) return p;
+  const m=Object.assign({},p,e);
+  const city=(m.city||'Address missing');
+  const st=(m.state||'MS').toUpperCase();
+  const parts=[m.street,m.suite,(city!=='Address missing'?city+', '+st:st),m.zip].filter(Boolean);
+  m.mapq=parts.join(' ');
+  return m;
+}
+
+// ---- clinic identity: staff belong to an office (address), not one provider ----
+const ABBR={street:'st',str:'st',drive:'dr',road:'rd',avenue:'ave',av:'ave',boulevard:'blvd',highway:'hwy',hway:'hwy',lane:'ln',court:'ct',circle:'cir',parkway:'pkwy',place:'pl',suite:'ste',building:'bldg',north:'n',south:'s',east:'e',west:'w',northeast:'ne',northwest:'nw',southeast:'se',southwest:'sw'};
+function normAddr(s){
+  let t=(s||'').toLowerCase().replace(/[.,#]/g,' ').replace(/\s+/g,' ').trim();
+  return t.split(' ').map(w=>ABBR[w]||w).join(' ').trim();
+}
+function clinicKey(p){
+  const e=eff(p);
+  const st=normAddr(e.street), cy=normAddr(e.city), stt=(e.state||'MS').toLowerCase();
+  if(!st) return 'noaddr::'+(p.id);           // no street: keep staff private to that provider
+  return st+'::'+cy+'::'+stt;
+}
+function clinicMates(p){
+  const k=clinicKey(p);
+  return PROVIDERS.filter(x=>clinicKey(x)===k);
+}
+function getStaff(p){return (staff[clinicKey(p)]||[]).slice().sort((a,b)=>a.name.localeCompare(b.name));}
+
+// city index (rebuilt from effective cities so a moved provider lands in the right list)
+let cities={}, cityNames=[];
+function rebuildIndex(){
+  cities={};
+  PROVIDERS.forEach(p=>{const c=eff(p).city||'Address missing';(cities[c]=cities[c]||[]).push(p);});
+  cityNames=Object.keys(cities).sort((a,b)=>{
+    if(a==='Address missing')return 1; if(b==='Address missing')return -1;
+    return a.localeCompare(b);
+  });
+}
+rebuildIndex();
+
+function cityStats(c){
+  const list=cities[c]; let done=0;
+  list.forEach(p=>{if(visited[p.id])done++;});
+  return {total:list.length,done};
+}
+function tally(){
+  const total=PROVIDERS.length;
+  let done=0; PROVIDERS.forEach(p=>{if(visited[p.id])done++;});
+  document.getElementById('tally').innerHTML=`<b>${done}</b> / ${total} visited`;
+}
+function ring(done,total){
+  const r=18,c=2*Math.PI*r,pct=total?done/total:0;
+  return `<div class="ring"><svg width="46" height="46" viewBox="0 0 46 46">
+    <circle cx="23" cy="23" r="${r}" fill="none" stroke="var(--line)" stroke-width="4"/>
+    <circle cx="23" cy="23" r="${r}" fill="none" stroke="var(--accent)" stroke-width="4"
+      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pct)}"/>
+  </svg><span class="pct">${Math.round(pct*100)}</span></div>`;
+}
+const esc=s=>(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+function anyGraded(){return PROVIDERS.some(p=>{const t=trendFor(p);return t&&(t.kind==='good'||t.kind==='slow');});}
+function trendFor(p){
+  if(p.prospect)return null;
+  const havePrev=prevCounts&&Object.keys(prevCounts).length;
+  if(havePrev&&prevCounts[p.id]===undefined)return {kind:'new'};
+  const hs=gainHist[p.id]||[];
+  if(hs.length<MIN_PRIOR+1)return null;
+  const latest=hs[hs.length-1];
+  const prior=hs.slice(0,-1);
+  const avg=prior.reduce((a,b)=>a+b,0)/prior.length;
+  return {kind:(latest>=avg?'good':'slow'), gain:latest, avg:Math.round(avg*10)/10};
+}
+function refBadge(p){
+  if(p.prospect)return `<span class="tag prospect">Prospect</span>`;
+  const base=`${p.count} referral${p.count==1?'':'s'}`;
+  const tr=trendFor(p);
+  if(!tr)return `<span class="tag ref">${base}</span>`;
+  if(tr.kind==='new')return `<span class="tag ref">${base}</span><span class="tag newprov">New</span>`;
+  const g=tr.gain, gtxt=(g>0?'+'+g+' new':'0 new');
+  if(tr.kind==='good')return `<span class="tag ref good">${base} \u00b7 ${gtxt}</span>`;
+  return `<span class="tag ref slow">${base} \u00b7 ${gtxt}</span>`;
+}
+function provRow(p){
+  const pe=eff(p);
+  const done=!!visited[p.id];
+  const addr=[pe.street,pe.suite].filter(Boolean).join(', ');
+  const line2=[(pe.city&&pe.city!=='Address missing'?pe.city+', '+(pe.state||'MS'):''),pe.zip].filter(Boolean).join('  ');
+  const maps='https://maps.apple.com/?q='+encodeURIComponent(pe.mapq);
+  const tel=pe.phone?pe.phone.replace(/[^0-9+]/g,''):'';
+  const nl=(notes[p.id]||[]); const ncount=nl.length;
+  const ntext=ncount?`<span class="notebadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9h8M8 13h6"/><path d="M21 12a9 9 0 0 1-9 9c-1.4 0-2.7-.3-3.9-.9L3 21l1.9-5.1A9 9 0 1 1 21 12Z"/></svg>${ncount}</span>`:'';
+  return `<div class="prov ${done?'done':''}" data-id="${p.id}">
+    <div class="check" data-act="toggle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="body" data-act="open">
+      <div class="pname">${esc(pe.name)}</div>
+      <div class="badges">
+        ${pe.type?`<span class="tag type">${esc(pe.type)}</span>`:''}
+        ${refBadge(p)}
+        ${ntext}
+      </div>
+      ${addr?`<div class="addr">${esc(addr)}<br>${esc(line2)}</div>`:`<div class="addr">${esc(line2)||'Tap to add address'}</div>`}
+    </div>
+    <div class="pincol">
+    ${tel?`<a class="pin call" href="tel:${esc(tel)}" data-act="call" aria-label="Call"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg></a>`:''}
+    <a class="pin" href="${maps}" data-act="map" aria-label="Open in Maps">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+    </a>
+    </div>
+  </div>`;
+}
+
+function renderHome(){
+  let names=cityNames;
+  if(q){
+    const matchP=PROVIDERS.filter(p=>norm(p.name).includes(q));
+    const matchCities=new Set(cityNames.filter(c=>norm(c).includes(q)));
+    matchP.forEach(p=>matchCities.add(p.city));
+    names=cityNames.filter(c=>matchCities.has(c));
+    if(matchP.length && names.length<=8){
+      // show provider matches directly
+      let h=`<div class="sechead">${matchP.length} provider${matchP.length==1?'':'s'} matching</div>`;
+      h+=matchP.slice(0,60).map(provRow).join('');
+      main.innerHTML=h; bindRows();
+      return;
+    }
+  }
+  if(!names.length){main.innerHTML='<div class="empty">No matches. Try another name or city.</div>';return;}
+  let h=q?'':backupBanner()+'<div class="hint">Tap a city to see who to call on while you\'re there.</div>';
+  if(!q)h+='<button class="addlead" onclick="openProspect(\'\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add a prospect</button>';
+  h+=names.map(c=>{
+    const s=cityStats(c);
+    return `<div class="city" data-city="${esc(c)}">
+      <div class="meta"><div class="name">${esc(c)}</div>
+      <div class="sub">${s.total} provider${s.total==1?'':'s'} &middot; ${s.done} visited</div></div>
+      ${ring(s.done,s.total)}
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+    </div>`;
+  }).join('');
+  main.innerHTML=h;
+  main.querySelectorAll('.city').forEach(el=>el.onclick=()=>{view={mode:'city',city:el.dataset.city};q='';document.getElementById('q').value='';render();window.scrollTo(0,0);});
+}
+
+function renderCity(){
+  const c=view.city; let list=cities[c].slice();
+  if(citySort==='address'){
+    const groups={};
+    list.forEach(p=>{ const k=clinicKey(p); (groups[k]=groups[k]||[]).push(p); });
+    const ordered=Object.values(groups).map(g=>{
+      g.sort((a,b)=>b.count-a.count);
+      const raw=(eff(g[0]).street||'').trim();
+      const m=raw.match(/^\s*(\d+)/);
+      const num=m?parseInt(m[1],10):Number.MAX_SAFE_INTEGER;
+      const st=normAddr(raw.replace(/^\s*\d+\s*/,''));
+      return {g, top:g[0].count, st:(st||'\uffff'), num};
+    }).sort((x,y)=>x.num-y.num||x.st.localeCompare(y.st)||y.top-x.top);
+    list=[].concat(...ordered.map(o=>o.g));
+  } else {
+    list.sort((a,b)=>b.count-a.count);
+  }
+  if(q)list=list.filter(p=>norm(p.name).includes(q));
+  const s=cityStats(c);
+  let shown=hideDone?list.filter(p=>!visited[p.id]):list;
+  const pct=s.total?Math.round(s.done/s.total*100):0;
+  let h=`<button class="back" id="back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>All cities</button>
+  <h2 class="dtitle">${esc(c)}</h2>
+  <div class="dbar"><div class="prog"><i style="width:${pct}%"></i></div><div class="dstat">${s.done} of ${s.total} visited</div></div>
+  ${anyGraded()?`<div class="trendkey">vs their usual pace: <span class="u">keeping pace</span> <span class="d">below pace</span></div>`:''}
+  <div class="toolrow">
+    <div class="toggle ${hideDone?'on':''}" id="tog"><div class="sw"><i></i></div>Hide visited</div>
+    <button class="reset" id="reset">Reset this city</button>
+  </div>
+  <div class="sortrow">
+    <span class="sortlbl">Sort</span>
+    <button class="sortbtn ${citySort==='volume'?'on':''}" data-sort="volume">Referral volume</button>
+    <button class="sortbtn ${citySort==='address'?'on':''}" data-sort="address">Address</button>
+  </div>
+  <button class="addlead citylead" onclick="openProspect('${esc(c).replace(/'/g,"\\'")}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Add a prospect in ${esc(c)}</button>`;
+  if(!shown.length){h+=`<div class="empty">${hideDone?'All caught up here \u2014 every provider visited. \ud83c\udf89':'No matches.'}</div>`;}
+  else h+=shown.map(provRow).join('');
+  main.innerHTML=h;
+  document.getElementById('back').onclick=()=>{view={mode:'home'};q='';document.getElementById('q').value='';render();window.scrollTo(0,0);};
+  document.getElementById('tog').onclick=()=>{hideDone=!hideDone;render();};
+  document.querySelectorAll('.sortbtn').forEach(b=>b.onclick=()=>{
+    citySort=b.dataset.sort; localStorage.setItem('rrdemo_sort',citySort); render();
+  });
+  document.getElementById('reset').onclick=()=>{
+    if(confirm('Clear visited marks for '+c+'?')){cities[c].forEach(p=>delete visited[p.id]);save();tally();render();}
+  };
+  bindRows();
+}
+
+function bindRows(){
+  main.querySelectorAll('.prov').forEach(row=>{
+    const id=row.dataset.id;
+    row.querySelectorAll('[data-act="toggle"]').forEach(el=>el.onclick=e=>{
+      e.stopPropagation();
+      if(visited[id])delete visited[id];else visited[id]=Date.now();
+      save();tally();
+      if(view.mode==='city')renderCity();else renderHome();
+    });
+    row.querySelectorAll('[data-act="open"]').forEach(el=>el.onclick=e=>{
+      e.stopPropagation(); openSheet(id);
+    });
+    const map=row.querySelector('[data-act="map"]');
+    if(map)map.onclick=e=>e.stopPropagation();
+    const call=row.querySelector('[data-act="call"]');
+    if(call)call.onclick=e=>e.stopPropagation();
+  });
+}
+
+let sheetId=null, editing=false;
+function lastContact(id){
+  let t=visited[id]||0;
+  (notes[id]||[]).forEach(n=>{ if(n.ts>t)t=n.ts; });
+  return t||0;
+}
+function sinceLabel(id){
+  const t=lastContact(id);
+  if(!t)return {txt:'Not visited yet',dim:true};
+  const days=Math.floor((Date.now()-t)/86400000);
+  if(days<=0)return {txt:'Visited today',dim:false};
+  if(days===1)return {txt:'Visited yesterday',dim:false};
+  return {txt:days+' days since last visit',dim:false};
+}
+const fmtDate=ts=>{const d=new Date(ts);return d.toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})+' \u00b7 '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});};
+function openSheet(id){sheetId=id;editing=false;staffOpen=false;renderSheet();}
+function closeSheet(){sheetId=null;editing=false;staffOpen=false;const o=document.getElementById('sheet');o.className='sheet-overlay';document.body.style.overflow='';}
+function showSheet(html){const o=document.getElementById('sheet');o.innerHTML=html;o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';}
+function renderSheet(){
+  const p=eff(byId[sheetId]);
+  if(editing){ renderEdit(p); return; }
+  const nl=(notes[sheetId]||[]).slice().sort((a,b)=>b.ts-a.ts);
+  const done=!!visited[sheetId];
+  const cityTxt=(p.city&&p.city!=='Address missing')?p.city+', '+(p.state||'MS'):'';
+  const addr=[p.street,p.suite,cityTxt,p.zip].filter(Boolean).join(', ');
+  const maps='https://maps.apple.com/?q='+encodeURIComponent(p.mapq);
+  const tel=p.phone?p.phone.replace(/[^0-9+]/g,''):'';
+  showSheet(`<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head">
+      <div style="flex:1;min-width:0">
+        <div class="sheet-name">${esc(p.name)}</div>
+        <div class="sheet-meta">${p.type?esc(p.type)+' \u00b7 ':''}${p.count} referral${p.count==1?'':'s'}${(p.city&&p.city!=='Address missing')?' \u00b7 '+esc(p.city):''}</div>
+      </div>
+      <button class="sheet-x" onclick="closeSheet()">\u2715</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="sact ${done?'on':''}" onclick="toggleFromSheet()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        ${done?'Visited':'Mark visited'}
+      </button>
+      <a class="sact" href="${maps}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Directions</a>
+      ${tel?`<a class="sact" href="tel:${esc(tel)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>Call</a>`:''}
+      ${p.email?`<a class="sact" href="mailto:${esc(p.email)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>Email</a>`:''}
+    </div>
+    <div class="snapline ${sinceLabel(p.id).dim?'snap-dim':''}">${sinceLabel(p.id).txt}</div>
+    ${addr?`<div class="sheet-addr">${esc(addr)}</div>`:''}
+    ${p.phone?`<div class="sheet-phone"><a href="tel:${esc(tel)}">${esc(p.phone)}</a></div>`:''}
+    ${p.fax?`<div class="sheet-fax">Fax: ${esc(p.fax)}</div>`:''}
+    ${p.email?`<div class="sheet-phone"><a href="mailto:${esc(p.email)}">${esc(p.email)}</a></div>`:''}
+    <button class="edit-btn" onclick="startEdit()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit address, phone &amp; email</button>
+    <div class="note-input">
+      <textarea id="notebox" placeholder="Log a call or conversation\u2026" rows="3"></textarea>
+      <button class="note-save" onclick="saveNote()">Add note</button>
+    </div>
+    <div class="note-list">
+      ${nl.length?nl.map(n=>`<div class="note-item"><div class="note-date">${fmtDate(n.ts)}</div><div class="note-text">${esc(n.text)}</div><button class="note-del" onclick="delNote(${n.ts})">Delete</button></div>`).join(''):'<div class="note-empty">No notes yet. Add your first call log above.</div>'}
+    </div>
+    ${staffSection(p)}
+    ${giftSection(p)}
+    ${lunchSection(p)}
+  </div>`);
+}
+function giftSection(p){
+  const yr=new Date().getFullYear();
+  const list=(gifts[p.id]||[]).slice().sort((a,b)=>b.ts-a.ts);
+  const tot=giftTotal(p.id,yr);
+  const rows=list.length
+    ? list.map(g=>`<div class="staff-item">
+        <div class="staff-line"><span class="staff-name">${esc(g.desc||'Gift')}</span><span class="staff-title">${money(+g.cost||0)}</span></div>
+        <div class="staff-note">${new Date(g.ts).toLocaleDateString()}</div>
+        <button class="note-del" onclick="delGift(${g.id})">Remove</button>
+      </div>`).join('')
+    : '<div class="note-empty">No gifts logged for this provider.</div>';
+  return `<div class="staff-wrap">
+    <div class="staff-head">Gifts ${tot?`<span class="staff-shared">${yr} total: ${money(tot)}</span>`:''}</div>
+    ${rows}
+    ${giftOpen?`<div class="staff-form">
+      <input id="gfDesc" class="ed-input" placeholder="What was given (e.g. Christmas basket)">
+      <input id="gfCost" class="ed-input" type="number" inputmode="decimal" step="0.01" placeholder="Cost (e.g. 45)">
+      <div class="ed-actions">
+        <button class="ed-cancel" onclick="toggleGiftForm(false)">Cancel</button>
+        <button class="ed-save" onclick="saveGift()">Log gift</button>
+      </div>
+    </div>`:`<button class="staff-add" onclick="toggleGiftForm(true)">+ Log a gift</button>`}
+  </div>`;
+}
+function lunchSection(p){
+  const yr=new Date().getFullYear(), k=clinicKey(p);
+  const list=(lunches[k]||[]).slice().sort((a,b)=>b.ts-a.ts);
+  const tot=lunchTotal(k,yr);
+  const mates=clinicMates(p).length;
+  const shared = mates>1 ? `<span class="staff-shared">this office \u00b7 ${yr} total: ${money(tot)}</span>`
+                         : (tot?`<span class="staff-shared">${yr} total: ${money(tot)}</span>`:'');
+  const rows=list.length
+    ? list.map(g=>`<div class="staff-item">
+        <div class="staff-line"><span class="staff-name">${esc(g.desc||'Lunch')}</span><span class="staff-title">${money(+g.cost||0)}</span></div>
+        <div class="staff-note">${new Date(g.ts).toLocaleDateString()}</div>
+        <button class="note-del" onclick="delLunch(${g.id})">Remove</button>
+      </div>`).join('')
+    : '<div class="note-empty">No lunches logged for this office.</div>';
+  return `<div class="staff-wrap">
+    <div class="staff-head">Lunches ${shared}</div>
+    ${rows}
+    ${lunchOpen?`<div class="staff-form">
+      <input id="lnDesc" class="ed-input" placeholder="What was provided (e.g. catered lunch)">
+      <input id="lnCost" class="ed-input" type="number" inputmode="decimal" step="0.01" placeholder="Total cost (e.g. 180)">
+      <div class="ed-actions">
+        <button class="ed-cancel" onclick="toggleLunchForm(false)">Cancel</button>
+        <button class="ed-save" onclick="saveLunch()">Log lunch</button>
+      </div>
+    </div>`:`<button class="staff-add" onclick="toggleLunchForm(true)">+ Log a lunch</button>`}
+  </div>`;
+}
+let giftOpen=false, lunchOpen=false;
+function toggleGiftForm(v){giftOpen=v;renderSheet();}
+function toggleLunchForm(v){lunchOpen=v;renderSheet();}
+function saveGift(){
+  const d=val('gfDesc'), c=val('gfCost');
+  if(!d&&!c){alert('Add what was given or a cost.');return;}
+  (gifts[sheetId]=gifts[sheetId]||[]).push({id:Date.now(),ts:Date.now(),desc:d||'Gift',cost:+c||0});
+  saveG(); giftOpen=false; renderSheet();
+}
+function delGift(id){
+  gifts[sheetId]=(gifts[sheetId]||[]).filter(g=>g.id!==id);
+  if(!gifts[sheetId].length)delete gifts[sheetId];
+  saveG(); renderSheet();
+}
+function saveLunch(){
+  const d=val('lnDesc'), c=val('lnCost');
+  if(!d&&!c){alert('Add what was provided or a cost.');return;}
+  const k=clinicKey(byId[sheetId]);
+  (lunches[k]=lunches[k]||[]).push({id:Date.now(),ts:Date.now(),desc:d||'Lunch',cost:+c||0});
+  saveL(); lunchOpen=false; renderSheet();
+}
+function delLunch(id){
+  const k=clinicKey(byId[sheetId]);
+  lunches[k]=(lunches[k]||[]).filter(g=>g.id!==id);
+  if(!lunches[k].length)delete lunches[k];
+  saveL(); renderSheet();
+}
+function staffSection(p){
+  const list=getStaff(p), mates=clinicMates(p).length;
+  const shared = mates>1 ? `<span class="staff-shared">shared with ${mates-1} other provider${mates-1==1?'':'s'} here</span>` : '';
+  const rows = list.length
+    ? list.map(s=>`<div class="staff-item">
+        <div class="staff-line"><span class="staff-name">${esc(s.name)}</span>${s.title?`<span class="staff-title">${esc(s.title)}</span>`:''}</div>
+        ${s.email?`<div class="staff-note"><a href="mailto:${esc(s.email)}">${esc(s.email)}</a></div>`:''}
+        ${s.note?`<div class="staff-note">${esc(s.note)}</div>`:''}
+        <button class="note-del" onclick="delStaff(${s.id})">Remove</button>
+      </div>`).join('')
+    : '<div class="note-empty">No staff listed for this office yet.</div>';
+  return `<div class="staff-wrap">
+    <div class="staff-head">Office staff ${shared}</div>
+    ${rows}
+    ${staffOpen?`<div class="staff-form">
+      <input id="stName" class="ed-input" placeholder="Name (e.g. Kandi Reeves)">
+      <input id="stTitle" class="ed-input" placeholder="Title (e.g. Referral coordinator)">
+      <input id="stEmail" class="ed-input" type="email" placeholder="Email (optional)">
+      <textarea id="stNote" class="ed-input" rows="2" placeholder="Note (optional)"></textarea>
+      <div class="ed-actions">
+        <button class="ed-cancel" onclick="toggleStaffForm(false)">Cancel</button>
+        <button class="ed-save" onclick="saveStaff()">Add staff</button>
+      </div>
+    </div>`:`<button class="staff-add" onclick="toggleStaffForm(true)">+ Add staff member</button>`}
+  </div>`;
+}
+let staffOpen=false;
+function toggleStaffForm(v){staffOpen=v;renderSheet();}
+function saveStaff(){
+  const n=val('stName'), t=val('stTitle'), nt=val('stNote'), em=val('stEmail');
+  if(!n){alert('Add a name first.');return;}
+  const k=clinicKey(byId[sheetId]);
+  (staff[k]=staff[k]||[]).push({id:Date.now(),name:n,title:t,note:nt,email:em});
+  saveS(); staffOpen=false; renderSheet(); render();
+}
+function delStaff(id){
+  if(!confirm('Remove this staff member?'))return;
+  const k=clinicKey(byId[sheetId]);
+  staff[k]=(staff[k]||[]).filter(s=>s.id!==id);
+  if(!staff[k].length)delete staff[k];
+  saveS(); renderSheet(); render();
+}
+function removeProspect(id){
+  if(!confirm('Remove this prospect? Your notes and visit for them will also be cleared.'))return;
+  prospects=prospects.filter(x=>x.id!==id); saveProspects();
+  delete visited[id]; delete notes[id]; delete edits[id]; save(); saveN(); saveE();
+  composeProviders(); rebuildIndex(); tally(); closeSheet(); render();
+}
+function openProspect(prefillCity){
+  showSheet(`<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><div style="flex:1;min-width:0">
+      <div class="sheet-name">Add prospect</div>
+      <div class="sheet-meta">A physician who isn't referring yet</div></div>
+      <button class="sheet-x" onclick="closeSheet()">\u2715</button></div>
+    ${field('psName','Provider name','','Dr. Jane Powell')}
+    ${field('psCred','Credential (optional)','','MD, DO, NP\u2026')}
+    ${field('psStreet','Street address','','120 Main St')}
+    ${field('psSuite','Suite / building','','Suite 2')}
+    ${field('psCity','City',prefillCity||'','Springfield')}
+    ${field('psZip','ZIP','','')}
+    ${field('psState','State','MS','MS')}
+    ${field('psPhone','Phone','','(555) 010-0100','tel')}
+    ${field('psFax','Fax','','(555) 010-0199','tel')}
+    ${field('psEmail','Email (optional)','','office@clinic.com','email')}
+    <div class="ed-actions">
+      <button class="ed-cancel" onclick="closeSheet()">Cancel</button>
+      <button class="ed-save" onclick="saveProspect()">Add prospect</button>
+    </div>
+  </div>`);
+}
+function stripTitle(n){return (n||'').replace(/^\s*(dr|doctor|mr|mrs|ms|miss|prof)\.?\s+/i,'').trim();}
+function jslugP(v){return (v||'').toString().toLowerCase().replace(/[^a-z0-9]/g,'');}
+function saveProspect(){
+  const val=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+  const name=stripTitle(val('psName'));
+  if(!name){alert('Add a provider name first.');return;}
+  const city=val('psCity')||'Address missing';
+  const state=(val('psState')||'MS').toUpperCase();
+  const street=val('psStreet'), suite=val('psSuite'), zip=val('psZip');
+  let base=(jslugP(name)+'__'+jslugP(city))||'p', pid=base, i=2;
+  const used=new Set(PROVIDERS.map(x=>x.id));
+  while(used.has(pid)){pid=base+'_'+(i++);}
+  const parts=[street,suite,(city!=='Address missing'?city+', '+state:state),zip].filter(Boolean);
+  prospects.push({id:pid,name:name,type:val('psCred'),city:city,street:street,suite:suite,zip:zip,
+    state:state,phone:val('psPhone'),fax:val('psFax'),email:val('psEmail'),count:0,prospect:true,mapq:parts.join(' ')});
+  saveProspects(); composeProviders(); rebuildIndex(); tally();
+  closeSheet(); view={mode:'city',city:city}; q=''; const qb=document.getElementById('q'); if(qb)qb.value='';
+  render(); window.scrollTo(0,0);
+}
+function field(id,label,val,ph,type){return `<label class="ed-label">${label}</label><input id="${id}" class="ed-input" type="${type||'text'}" value="${esc(val||'')}" placeholder="${ph||''}">`;}
+function renderEdit(p){
+  showSheet(`<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head">
+      <div style="flex:1;min-width:0"><div class="sheet-name">Edit details</div>
+      <div class="sheet-meta">${esc(p.name)}</div></div>
+      <button class="sheet-x" onclick="renderSheetView()">\u2715</button>
+    </div>
+    ${field('edStreet','Street address',p.street,'401 S Chestnut St')}
+    ${field('edSuite','Suite / building',p.suite,'Suite 4')}
+    ${field('edCity','City',(p.city&&p.city!=='Address missing')?p.city:'','Springfield')}
+    ${field('edZip','ZIP',p.zip,'38801')}
+    ${field('edState','State',p.state||'MS','MS')}
+    ${field('edPhone','Phone',p.phone,'(555) 010-0100','tel')}
+    ${field('edFax','Fax',p.fax,'(555) 010-0199','tel')}
+    ${field('edEmail','Email (optional)',p.email,'office@clinic.com','email')}
+    <div class="ed-actions">
+      <button class="ed-cancel" onclick="renderSheetView()">Cancel</button>
+      <button class="ed-save" onclick="saveEdit()">Save changes</button>
+    </div>
+    ${p.prospect?`<button class="removelead" onclick="removeProspect('${p.id}')">Remove this prospect</button>`:''}
+  </div>`);
+}
+function startEdit(){editing=true;renderSheet();}
+function renderSheetView(){editing=false;renderSheet();}
+function val(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function saveEdit(){
+  const base=byId[sheetId];
+  const o={street:val('edStreet'),suite:val('edSuite'),city:val('edCity'),zip:val('edZip'),state:(val('edState')||'MS').toUpperCase(),phone:val('edPhone'),fax:val('edFax'),email:val('edEmail')};
+  // if everything matches the baked data and no phone/fax, drop the override to keep things clean
+  const same=o.street===(base.street||'')&&o.suite===(base.suite||'')&&
+             o.city===((base.city&&base.city!=='Address missing')?base.city:'')&&
+             o.zip===(base.zip||'')&&o.state===(base.state||'MS')&&!o.phone&&!o.fax&&!o.email;
+  if(same) delete edits[sheetId]; else edits[sheetId]=o;
+  saveE(); rebuildIndex(); editing=false; renderSheet(); render();
+}
+function toggleFromSheet(){
+  if(visited[sheetId])delete visited[sheetId];else visited[sheetId]=Date.now();
+  save();tally();renderSheet();render();
+}
+function saveNote(){
+  const box=document.getElementById('notebox');const t=box.value.trim();
+  if(!t)return;
+  (notes[sheetId]=notes[sheetId]||[]).push({ts:Date.now(),text:t});
+  saveN();box.value='';renderSheet();render();
+}
+function delNote(ts){
+  if(!confirm('Delete this note?'))return;
+  notes[sheetId]=(notes[sheetId]||[]).filter(n=>n.ts!==ts);
+  if(!notes[sheetId].length)delete notes[sheetId];
+  saveN();renderSheet();render();
+}
+function pad(n){return n<10?'0'+n:''+n;}
+function stamp(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+async function shareOrDownload(filename,text,mime){
+  const blob=new Blob([text],{type:mime});
+  try{
+    const file=new File([blob],filename,{type:mime});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:filename}); return;
+    }
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function rangeStart(range){
+  if(range==='all')return 0;
+  const d=new Date(); d.setHours(0,0,0,0);
+  if(range==='week'){ const dow=(d.getDay()+6)%7; d.setDate(d.getDate()-dow); }
+  else if(range==='month'){ d.setDate(1); }
+  return d.getTime();
+}
+function periodLabel(range){
+  if(range==='all')return 'All time';
+  const s=new Date(rangeStart(range));
+  return s.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' \u2013 '+new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+}
+function buildLog(range){
+  const start=rangeStart(range), inR=ts=>ts>=start;
+  const active=PROVIDERS.filter(p=>{
+    const nl=(notes[p.id]||[]).some(n=>inR(n.ts));
+    const vis=visited[p.id]&&inR(visited[p.id]);
+    return nl||vis;
+  });
+  active.sort((a,b)=>a.city.localeCompare(b.city)||a.name.localeCompare(b.name));
+  let notesInRange=0, visitsInRange=0;
+  PROVIDERS.forEach(p=>{(notes[p.id]||[]).forEach(n=>{if(inR(n.ts))notesInRange++;}); if(visited[p.id]&&inR(visited[p.id]))visitsInRange++;});
+  const nm=liaisonName||'(liaison name)';
+  let out='REFERRAL ROUNDS \u2014 ACTIVITY REPORT\n';
+  out+='Liaison: '+nm+'\n';
+  out+='Period: '+periodLabel(range)+'\n';
+  out+=visitsInRange+' visit'+(visitsInRange==1?'':'s')+' logged \u00b7 '+active.length+' practice'+(active.length==1?'':'s')+' \u00b7 '+notesInRange+' note'+(notesInRange==1?'':'s')+'\n';
+  out+='Generated '+new Date().toLocaleString()+'\n'+'='.repeat(40)+'\n';
+  let curCity='';
+  active.forEach(bp=>{
+    const p=eff(bp), gc=p.city||'Address missing';
+    if(gc!==curCity){curCity=gc;out+='\n\n### '+curCity.toUpperCase()+'\n';}
+    const vtxt=(visited[bp.id]&&inR(visited[bp.id]))?'visited '+new Date(visited[bp.id]).toLocaleDateString():(visited[bp.id]?'visited earlier':'not marked');
+    out+='\n'+p.name+'  ['+(p.type?p.type+' \u00b7 ':'')+bp.count+' referral'+(bp.count==1?'':'s')+' \u00b7 '+vtxt+']\n';
+    const addr=[p.street,p.suite,(p.city&&p.city!=='Address missing'?p.city+', '+(p.state||'MS'):''),p.zip].filter(Boolean).join(', ');
+    if(addr)out+='  '+addr+'\n';
+    const stf=getStaff(bp);
+    if(stf.length)out+='  Staff: '+stf.map(s=>s.name+(s.title?' ('+s.title+')':'')).join('; ')+'\n';
+    (notes[bp.id]||[]).filter(n=>inR(n.ts)).sort((a,b)=>a.ts-b.ts).forEach(n=>{
+      out+='  \u2022 '+new Date(n.ts).toLocaleString()+'\n    '+n.text.replace(/\n/g,'\n    ')+'\n';
+    });
+  });
+  if(!active.length)out+='\nNo activity logged in this period.\n';
+  return out;
+}
+function openReport(){
+  const o=document.getElementById('sheet');
+  o.innerHTML=`<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><div style="flex:1"><div class="sheet-name">Activity report</div></div>
+    <button class="sheet-x" onclick="closeSheet()">\u2715</button></div>
+    <div class="sheet-sub">A tidy summary to email your manager. Pick a period.</div>
+    <input id="repName" class="ed-input" placeholder="Your name (shown on the report)" value="${esc(liaisonName)}">
+    <div class="rep-btns">
+      <button class="wbtn wprimary" onclick="doReport('week')">This week</button>
+      <button class="wbtn wghost" onclick="doReport('month')">This month</button>
+      <button class="wbtn wghost" onclick="doReport('all')">Everything</button>
+    </div>
+  </div>`;
+  o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
+}
+function buildGiftLog(yr){
+  const L=[]; L.push('GIFTS & LUNCHES \u2014 '+yr);
+  if(liaisonName)L.push('Liaison: '+liaisonName);
+  L.push('Generated '+new Date().toLocaleString());
+  L.push('');
+
+  // gifts, per provider
+  const gRows=[];
+  Object.keys(gifts).forEach(id=>{
+    const items=(gifts[id]||[]).filter(g=>yearOf(g.ts)===yr);
+    if(!items.length)return;
+    const p=byId[id]; if(!p)return;
+    gRows.push({name:p.name, city:p.city, items, tot:items.reduce((a,g)=>a+(+g.cost||0),0)});
+  });
+  gRows.sort((a,b)=>b.tot-a.tot);
+  const gTot=gRows.reduce((a,r)=>a+r.tot,0);
+
+  // lunches, per office
+  const lRows=[];
+  Object.keys(lunches).forEach(k=>{
+    const items=(lunches[k]||[]).filter(g=>yearOf(g.ts)===yr);
+    if(!items.length)return;
+    const who=PROVIDERS.filter(p=>clinicKey(p)===k);
+    const label=who.length?((eff(who[0]).street||'Office')+(who[0].city&&who[0].city!=='Address missing'?', '+who[0].city:'')):k;
+    lRows.push({label, n:who.length, items, tot:items.reduce((a,g)=>a+(+g.cost||0),0)});
+  });
+  lRows.sort((a,b)=>b.tot-a.tot);
+  const lTot=lRows.reduce((a,r)=>a+r.tot,0);
+
+  L.push('TOTAL FOR '+yr+': '+money(gTot+lTot));
+  L.push('  Gifts:   '+money(gTot)+'  ('+gRows.length+' provider'+(gRows.length==1?'':'s')+')');
+  L.push('  Lunches: '+money(lTot)+'  ('+lRows.length+' office'+(lRows.length==1?'':'s')+')');
+  L.push('');
+  L.push('--- GIFTS BY PROVIDER ---');
+  if(!gRows.length)L.push('None logged.');
+  gRows.forEach(r=>{
+    L.push('');
+    L.push(r.name+(r.city&&r.city!=='Address missing'?'  ('+r.city+')':'')+'  \u2014 '+money(r.tot));
+    r.items.sort((a,b)=>a.ts-b.ts).forEach(g=>L.push('  \u2022 '+new Date(g.ts).toLocaleDateString()+'  '+(g.desc||'Gift')+'  '+money(+g.cost||0)));
+  });
+  L.push('');
+  L.push('--- LUNCHES BY OFFICE ---');
+  if(!lRows.length)L.push('None logged.');
+  lRows.forEach(r=>{
+    L.push('');
+    L.push(r.label+'  \u2014 '+money(r.tot)+(r.n?'  ['+r.n+' provider'+(r.n==1?'':'s')+' at this address]':''));
+    r.items.sort((a,b)=>a.ts-b.ts).forEach(g=>L.push('  \u2022 '+new Date(g.ts).toLocaleDateString()+'  '+(g.desc||'Lunch')+'  '+money(+g.cost||0)));
+  });
+  L.push('');
+  L.push('Lunches are recorded per office, not split between the providers there.');
+  return L.join('\n');
+}
+function doGiftReport(){
+  const yrs=new Set();
+  Object.values(gifts).forEach(a=>a.forEach(g=>yrs.add(yearOf(g.ts))));
+  Object.values(lunches).forEach(a=>a.forEach(g=>yrs.add(yearOf(g.ts))));
+  const now=new Date().getFullYear(); yrs.add(now);
+  const list=[...yrs].sort((a,b)=>b-a);
+  const o=document.getElementById('sheet');
+  o.innerHTML=`<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><div style="flex:1"><div class="sheet-name">Gifts &amp; lunches</div></div>
+    <button class="sheet-x" onclick="closeSheet()">\u2715</button></div>
+    <div class="sheet-sub">Totals for the year, by provider and by office. Pick a year.</div>
+    <div class="rep-btns">
+      ${list.map((y,i)=>`<button class="wbtn ${i===0?'wprimary':'wghost'}" onclick="doGiftYear(${y})">${y}</button>`).join('')}
+    </div>
+  </div>`;
+  o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
+}
+function doGiftYear(y){
+  shareOrDownload('ReferralRounds-Gifts-'+y+'.txt',buildGiftLog(y),'text/plain');
+}
+function doReport(range){
+  const inp=document.getElementById('repName'); liaisonName=(inp?inp.value:'').trim();
+  localStorage.setItem('rrdemo_name',liaisonName);
+  const lab=range==='week'?'Week':range==='month'?'Month':'All';
+  shareOrDownload('ReferralRounds-Report-'+lab+'-'+stamp()+'.txt',buildLog(range),'text/plain');
+}
+function seedSampleActivity(){
+  const day=86400000, now=Date.now(); visited={}; notes={};
+  const blurbs=['Dropped off marketing packet, spoke with front desk. All good.',
+    'Introduced our new sports-medicine hours. Referral coordinator was receptive.',
+    'Quick check-in. They said referrals have been going smoothly.',
+    'Met the new NP. Walked through our QR referral form.',
+    'Left updated provider cards. Office manager asked about turnaround times.',
+    'Good visit \u2014 they mentioned a patient they are sending our way this week.',
+    'Demoed the online referral link. Front desk liked how fast it was.'];
+  const picks=PROVIDERS.slice(0,14);
+  picks.forEach((p,i)=>{ visited[p.id]=now-(i%6)*day-3600000; });
+  picks.slice(0,7).forEach((p,i)=>{ notes[p.id]=[{ts:now-(i%5)*day-5400000,text:blurbs[i]}]; });
+  // seed a few months of per-doctor gain history so trend colors show live in the demo
+  const prev={}, hist={};
+  PROVIDERS.forEach((pp,i)=>{
+    if(pp.prospect)return;
+    const r=i%5;
+    if(r===0){ return; }                        // brand-new referrer (not in last download) -> "New"
+    prev[pp.id]=pp.count;
+    if(r===1){ hist[pp.id]=[4,5,6,7]; }         // accelerating -> GREEN
+    else if(r===2){ hist[pp.id]=[6,5,6,6]; }    // steady at pace -> GREEN
+    else if(r===3){ hist[pp.id]=[8,7,6,0]; }    // cooled off, 0 new -> RED
+    else { hist[pp.id]=[5,6,4,2]; }             // slowing below norm -> RED
+  });
+  prevCounts=prev; gainHist=hist;
+  localStorage.setItem('rrdemo_prev_v1',JSON.stringify(prev));
+  localStorage.setItem('rrdemo_hist_v1',JSON.stringify(hist));
+  save(); saveN(); tally(); render();
+}
+function buildCallLog(){
+  let totalNotes=0, withNotes=[];
+  PROVIDERS.forEach(p=>{const nl=notes[p.id];if(nl&&nl.length){withNotes.push(p);totalNotes+=nl.length;}});
+  withNotes.sort((a,b)=>a.city.localeCompare(b.city)||a.name.localeCompare(b.name));
+  let visCount=Object.keys(visited).length;
+  let out='REFERRAL ROUNDS \u2014 CALL LOG\nExported '+new Date().toLocaleString()+'\n';
+  out+=totalNotes+' note'+(totalNotes==1?'':'s')+' across '+withNotes.length+' provider'+(withNotes.length==1?'':'s')+'  \u00b7  '+visCount+' marked visited\n';
+  out+='='.repeat(40)+'\n';
+  let curCity='';
+  withNotes.forEach(bp=>{
+    const p=eff(bp);
+    const gc=p.city||'Address missing';
+    if(gc!==curCity){curCity=gc;out+='\n\n### '+curCity.toUpperCase()+'\n';}
+    const v=visited[bp.id]?'visited '+new Date(visited[bp.id]).toLocaleDateString():'not visited';
+    out+='\n'+p.name+'  ['+(p.type||'')+' \u00b7 '+bp.count+' referral'+(bp.count==1?'':'s')+' \u00b7 '+v+']\n';
+    const addr=[p.street,p.suite,(p.city&&p.city!=='Address missing'?p.city+', '+(p.state||'MS'):''),p.zip].filter(Boolean).join(', ');
+    if(addr)out+='  '+addr+'\n';
+    const stf=getStaff(bp);
+    if(stf.length){out+='  Staff: '+stf.map(s=>s.name+(s.title?' ('+s.title+')':'')).join('; ')+'\n';}
+    if(p.phone)out+='  '+p.phone+'\n';
+    if(p.fax)out+='  Fax: '+p.fax+'\n';
+    notes[bp.id].slice().sort((a,b)=>a.ts-b.ts).forEach(n=>{
+      out+='  \u2022 '+new Date(n.ts).toLocaleString()+'\n    '+n.text.replace(/\n/g,'\n    ')+'\n';
+    });
+  });
+  if(!withNotes.length)out+='\nNo notes logged yet.\n';
+  return out;
+}
+function openDataSheet(){
+  let totalNotes=0,provN=0;PROVIDERS.forEach(p=>{const nl=notes[p.id];if(nl&&nl.length){provN++;totalNotes+=nl.length;}});
+  const o=document.getElementById('sheet');
+  o.innerHTML=`<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><div style="flex:1"><div class="sheet-name">Export &amp; back up</div></div>
+    <button class="sheet-x" onclick="closeSheet()">\u2715</button></div>
+    <div class="sheet-sub">${totalNotes} note${totalNotes==1?'':'s'} on ${provN} provider${provN==1?'':'s'}, plus ${Object.keys(visited).length} visited marks.</div>
+    <button class="drow" onclick="openReport()">
+      <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg></span>
+      <span class="dt"><b>Activity report</b><span>Weekly or monthly summary to email your manager</span></span></button>
+    <button class="drow" onclick="doCallLog()">
+      <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span>
+      <span class="dt"><b>Export call log</b><span>Readable record of every dated note \u2014 save or email it</span></span></button>
+    <button class="drow" onclick="doGiftReport()">
+      <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18"/><path d="M12 8S9.5 3 7.5 4.5 9 8 12 8Zm0 0s2.5-5 4.5-3.5S15 8 12 8Z"/></svg></span>
+      <span class="dt"><b>Gifts &amp; lunches</b><span>Yearly totals by provider and office \u2014 for budgeting and your compliance log</span></span></button>
+    <button class="drow" onclick="doBackup()">
+      <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg></span>
+      <span class="dt"><b>Back up data</b><span>Full backup file to move to a new phone</span></span></button>
+    <button class="drow" onclick="document.getElementById('restorefile').click()">
+      <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/></svg></span>
+      <span class="dt"><b>Restore from backup</b><span>Load a backup file onto this device</span></span></button>
+    <button class="drow" onclick="openImport()">
+      <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0-12 4 4m-4-4-4 4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span>
+      <span class="dt"><b>Load or replace data</b><span>Import a new CRM export (replaces current list)</span></span></button>
+  </div>`;
+  o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
+}
+function doCallLog(){shareOrDownload('ReferralRounds-CallLog-'+stamp()+'.txt',buildCallLog(),'text/plain');}
+function doBackup(){const data=JSON.stringify(snapshot());localStorage.setItem('rrdemo_lastbackup',String(Date.now()));shareOrDownload('ReferralRounds-Backup-'+stamp()+'.json',data,'application/json');render();}
+function daysSinceBackup(){const t=+localStorage.getItem('rrdemo_lastbackup')||0;if(!t)return null;return Math.floor((Date.now()-t)/86400000);}
+function backupBanner(){
+  const work=Object.keys(visited).length+Object.keys(notes).length;
+  if(!work)return '';
+  const d=daysSinceBackup();
+  if(d===null)return `<div class="bkbanner"><div class="bktext"><b>Your work isn\u2019t backed up yet.</b> Phone storage can be cleared without warning \u2014 save a backup file now.</div><button class="bkbtn" onclick="doBackup()">Back up</button></div>`;
+  if(d>=7)return `<div class="bkbanner"><div class="bktext"><b>Last backup: ${d} days ago.</b> Worth saving a fresh one.</div><button class="bkbtn" onclick="doBackup()">Back up</button></div>`;
+  return '';
+}
+document.getElementById('restorefile').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(d.app!=='ReferralRounds'||!d.notes||!d.visited)throw 0;
+      const nN=Object.keys(d.notes).length,nV=Object.keys(d.visited).length;
+      if(confirm('Restore '+nV+' visited marks and notes for '+nN+' providers? This replaces what is on this device now.')){
+        visited=d.visited;notes=d.notes;edits=d.edits||{};staff=d.staff||{};
+        save();saveN();saveE();saveS();rebuildIndex();tally();closeSheet();render();
+        alert('Backup restored.');
+      }
+    }catch(err){alert('That file is not a Referral Rounds backup.');}
+    e.target.value='';
+  };
+  r.readAsText(f);
+});
+document.getElementById('exportbtn').onclick=openDataSheet;
+function saveData(){localStorage.setItem(LSDATA,JSON.stringify(baseProviders));}
+function loadData(arr,{clearProgress=false}={}){
+  baseProviders=arr; saveData(); composeProviders();
+  if(clearProgress){visited={};notes={};edits={};staff={};save();saveN();saveE();saveS();}
+  rebuildIndex(); view={mode:'home'}; q=''; const qb=document.getElementById('q'); if(qb) qb.value='';
+  document.getElementById('welcome').classList.add('hidden');
+  document.body.style.overflow=''; tally(); render();
+}
+function useSample(){ loadData(JSON.parse(JSON.stringify(SAMPLE_DATA)),{clearProgress:true}); localStorage.setItem('rrdemo_seed','1'); seedSampleActivity(); }
+function showWelcome(){ document.getElementById('welcome').classList.remove('hidden'); }
+function render(){if(view.mode==='city')renderCity();else renderHome();}
+document.getElementById('q').addEventListener('input',e=>{q=norm(e.target.value.trim());render();});
+
+// ---- PIN gate ----
+const PINKEY='rrdemo_pin', NOPIN='rrdemo_nopin';
+function hashPin(s){let x=2166136261>>>0;for(const c of s){x^=c.charCodeAt(0);x=Math.imul(x,16777619)>>>0;}return 'h'+x;}
+const lock=document.getElementById('lock'), lkDots=document.getElementById('lkDots'),
+      lkTitle=document.getElementById('lkTitle'), lkSub=document.getElementById('lkSub'),
+      lkPad=document.getElementById('lkPad'), lkSkip=document.getElementById('lkSkip');
+let gateState=null, entry='', firstPin=null;
+function buildPad(){
+  const keys=['1','2','3','4','5','6','7','8','9','fn','0','del'];
+  lkPad.innerHTML='';
+  keys.forEach(k=>{
+    const b=document.createElement('button');
+    if(k==='fn'){ b.className='blank'; b.disabled=true; }
+    else if(k==='del'){ b.className='fn'; b.textContent='Delete'; b.onclick=()=>{entry=entry.slice(0,-1);paintDots();}; }
+    else { b.textContent=k; b.onclick=()=>press(k); }
+    lkPad.appendChild(b);
+  });
+}
+function paintDots(bad){
+  [...lkDots.children].forEach((d,i)=>d.classList.toggle('on',i<entry.length));
+  if(bad){lkDots.classList.add('bad');setTimeout(()=>lkDots.classList.remove('bad'),360);}
+}
+function press(d){ if(entry.length>=4)return; entry+=d; paintDots();
+  if(entry.length===4) setTimeout(submitPin,140);
+}
+function submitPin(){
+  if(gateState==='verify'){
+    if(hashPin(entry)===localStorage.getItem(PINKEY)){ unlock(); }
+    else { entry=''; paintDots(true); }
+  } else if(gateState==='set'){
+    firstPin=entry; entry=''; gateState='confirm';
+    lkSub.textContent='Enter it again to confirm.'; paintDots();
+  } else if(gateState==='confirm'){
+    if(entry===firstPin){ localStorage.setItem(PINKEY,hashPin(entry)); localStorage.removeItem(NOPIN); unlock(); }
+    else { entry=''; firstPin=null; gateState='set'; lkSub.textContent="Those didn't match. Set a 4-digit PIN."; paintDots(true); }
+  }
+}
+function unlock(){ lock.classList.add('hidden'); document.body.style.overflow=''; }
+function startGate(){
+  entry=''; buildPad();
+  if(localStorage.getItem(NOPIN)==='1'){ unlock(); return; }
+  if(localStorage.getItem(PINKEY)){
+    gateState='verify'; lkTitle.textContent='Enter PIN'; lkSub.textContent='Enter your 4-digit PIN to unlock.'; lkSkip.style.display='none';
+  } else {
+    gateState='set'; lkTitle.textContent='Set a PIN'; lkSub.textContent='Create a 4-digit PIN to lock this app. Optional.';
+  }
+}
+lkSkip.onclick=()=>{ localStorage.setItem(NOPIN,'1'); unlock(); };
+unlock(); // demo: no PIN wall
+if(PROVIDERS.length===0){ showWelcome(); }
+
+tally();render();
+
+// ---------- ModMed import (client-side) ----------
+function pickCol(headers,...keys){
+  const H=headers.map(h=>({raw:h,n:(h||'').toString().toLowerCase().replace(/\s+/g,' ').trim()}));
+  for(const k of keys){ const hit=H.find(x=>x.n.includes(k)); if(hit) return hit.raw; }
+  return null;
+}
+function jslug(v){return (v||'').toString().toLowerCase().replace(/[^a-z0-9]/g,'');}
+function fmtName(v){v=(v||'').toString().trim().toLowerCase(); if(v.includes(',')){const [l,f]=v.split(',');return (f.trim()+' '+l.trim()).replace(/\b\w/g,c=>c.toUpperCase());} return v.replace(/\b\w/g,c=>c.toUpperCase());}
+function tcase(v){v=(v||'').toString().trim().toLowerCase(); return v?v.replace(/\b\w/g,c=>c.toUpperCase()):'';}
+function junkNum(v){v=(v||'').toString().trim(); const d=v.replace(/\D/g,''); return (!d||/^0+$/.test(d))?'':v;}
+function credNorm(v){v=(v||'').toString().toUpperCase().replace(/\./g,'').trim(); const m={MD:'MD',DO:'DO',NP:'NP',FNP:'FNP',CFNP:'FNP',FNPBC:'FNP',FNPC:'FNP',APRN:'APRN',PAC:'PA-C'}; return (['JR','SR','II','III',''].includes(v))?'':(m[v]||''); }
+const CITYFIX={'holley springs':'Holly Springs','misissippi state':'Mississippi State','misissippi state university':'Mississippi State','mississippi state university':'Mississippi State'};
+function fixCity(v){v=(v||'').toString().replace(/[ ,\.]+$/,'').trim(); if(!v)return 'Address missing'; const t=tcase(v).replace(/\s+/g,' '); return CITYFIX[t.toLowerCase()]||t; }
+
+function handleImport(file){
+  if(typeof XLSX==='undefined'){ alert('Still loading the spreadsheet reader — give it a second and try again.'); return; }
+  const status=document.getElementById('impStatus'); status.textContent='Reading '+file.name+'…';
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!data.length){ status.textContent='That sheet looks empty.'; return; }
+      const headers=Object.keys(data[0]);
+      const col={
+        cnt:pickCol(headers,'patient count','count','referrals','volume'),
+        name:pickCol(headers,'provider name','referring provider name','name'),
+        a1:pickCol(headers,'address line 1','address 1','street','address'),
+        a2:pickCol(headers,'address line 2','address 2','suite'),
+        city:pickCol(headers,'city'),
+        state:pickCol(headers,'state'),
+        zip:pickCol(headers,'zip','postal'),
+        phone:pickCol(headers,'work phone','phone'),
+        fax:pickCol(headers,'fax'),
+        suf:pickCol(headers,'suffix','credential','degree')
+      };
+      if(!col.name||!col.cnt){
+        status.innerHTML='Could not find the needed columns. I found:<br><b>'+headers.join(', ')+'</b><br>I need at least a provider <b>name</b> and a <b>patient count</b> column.';
+        return;
+      }
+      const groups={};
+      data.forEach(row=>{
+        const nm=(row[col.name]||'').toString().trim(); if(!nm) return;
+        const city=fixCity(col.city?row[col.city]:'');
+        const key=nm+'||'+city;
+        (groups[key]=groups[key]||[]).push(row);
+      });
+      const out=[]; const seen={};
+      Object.keys(groups).forEach(key=>{
+        const rows=groups[key].slice().sort((a,b)=>(+b[col.cnt]||0)-(+a[col.cnt]||0));
+        const top=rows[0];
+        const nm=(top[col.name]||'').toString().trim();
+        const city=fixCity(col.city?top[col.city]:'');
+        let count=0; rows.forEach(r=>count+=(+r[col.cnt]||0));
+        const firstGood=(c,fn)=>{ if(!c) return ''; for(const r of rows){const v=fn(r[c]); if(v) return v;} return ''; };
+        const phone=firstGood(col.phone,junkNum), fax=firstGood(col.fax,junkNum);
+        const zip=firstGood(col.zip,v=>{v=(v||'').toString().trim(); return (v.toUpperCase()==='OTHER')?'':v;});
+        let typ=''; if(col.suf){ for(const r of rows){const c=credNorm(r[col.suf]); if(c){typ=c;break;}} }
+        const state=((col.state?top[col.state]:'')||'MS').toString().toUpperCase().trim()||'MS';
+        const street=tcase(col.a1?top[col.a1]:''), suite=tcase(col.a2?top[col.a2]:'');
+        let base=(jslug(nm)+'__'+jslug(city))||'p', id=base, i=2; while(seen[id]){id=base+'_'+(i++);} seen[id]=1;
+        const parts=[street,suite,(city!=='Address missing'?city+', '+state:state),zip].filter(Boolean);
+        out.push({id,name:fmtName(nm),type:typ,city,street,suite,zip,state,phone,fax,count,mapq:parts.join(' ')});
+      });
+      out.sort((a,b)=>a.city.localeCompare(b.city)||b.count-a.count||a.name.localeCompare(b.name));
+      const cities=new Set(out.map(p=>p.city)).size;
+      status.textContent='Imported '+out.length+' providers across '+cities+' cities.';
+      const wasSeed=localStorage.getItem('rrdemo_seed')==='1'; localStorage.removeItem('rrdemo_seed');
+      const newPrev={};
+      if(wasSeed){ gainHist={}; localStorage.removeItem('rrdemo_hist_v1'); }
+      out.forEach(np=>{
+        newPrev[np.id]=np.count;
+        if(!wasSeed && prevCounts[np.id]!==undefined){
+          const g=np.count-prevCounts[np.id];
+          (gainHist[np.id]=gainHist[np.id]||[]).push(g);
+        }
+      });
+      prevCounts=newPrev;
+      localStorage.setItem('rrdemo_prev_v1',JSON.stringify(prevCounts));
+      localStorage.setItem('rrdemo_hist_v1',JSON.stringify(gainHist));
+      loadData(out,{clearProgress:wasSeed});
+    }catch(err){ document.getElementById('impStatus').textContent='Sorry — could not read that file. Make sure it is the Excel export from your CRM.'; }
+  };
+  r.readAsArrayBuffer(file);
+}
+document.getElementById('importfile').addEventListener('change',e=>{ if(e.target.files[0]) handleImport(e.target.files[0]); e.target.value=''; });
+function openImport(){ closeSheet(); showWelcome(); }
+
+</script>
+</body>
+</html>
