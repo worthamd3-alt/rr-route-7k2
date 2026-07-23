@@ -145,6 +145,10 @@ main{padding:6px 14px 40px;}
 .sheet-actions{display:flex;gap:9px;margin:16px 0 4px;}
 .sact{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;}
 .sact.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.snapline{font-size:13.5px;font-weight:650;color:var(--accent);margin:11px 2px 0;display:flex;align-items:center;gap:7px;}
+.snapline:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.snap-dim{color:var(--muted);}
+.snap-dim:before{background:var(--muted);}
 .sheet-addr{font-size:13px;color:var(--muted);margin:12px 2px 0;line-height:1.4;}
 .note-input{margin:18px 0 6px;}
 .note-input textarea{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:13px;padding:13px;font-size:16px;font-family:inherit;color:var(--ink);outline:none;resize:vertical;line-height:1.45;}
@@ -295,7 +299,7 @@ function idb(){
   });
 }
 function snapshot(){
-  return {app:'ReferralRounds',version:5,saved:Date.now(),visited,notes,edits,staff,prospects,liaisonName,gifts,lunches};
+  return {app:'ReferralRounds',version:6,saved:Date.now(),visited,notes,edits,staff,prospects,liaisonName,gifts,lunches,mmReq,mmSent};
 }
 function mirror(){ // debounced so rapid taps don't thrash
   clearTimeout(_mirrorTimer);
@@ -334,9 +338,9 @@ async function checkRecovery(){
   if(gi)bits.push('gifts for '+gi+' providers');
   if(lu)bits.push('lunches for '+lu+' offices');
   if(confirm('Your saved work looks like it was cleared by the browser.\n\nA safety copy from '+when+' was found with '+bits.join(', ')+'.\n\nRestore it now?')){
-    visited=m.visited||{}; notes=m.notes||{}; edits=m.edits||{}; staff=m.staff||{}; prospects=m.prospects||[]; gifts=m.gifts||{}; lunches=m.lunches||{};
+    visited=m.visited||{}; notes=m.notes||{}; edits=m.edits||{}; staff=m.staff||{}; prospects=m.prospects||[]; gifts=m.gifts||{}; lunches=m.lunches||{}; mmReq=m.mmReq||{}; mmSent=m.mmSent||{};
     if(m.liaisonName){liaisonName=m.liaisonName;localStorage.setItem('refrounds_name',liaisonName);}
-    save();saveN();saveE();saveS();saveProspects();saveG();saveL();composeProviders();rebuildIndex();tally();render();
+    save();saveN();saveE();saveS();saveProspects();saveG();saveL();saveMM();saveMMSent();composeProviders();rebuildIndex();tally();render();
 checkRecovery();
   }
 }
@@ -345,16 +349,66 @@ const saveProspects=()=>{localStorage.setItem('refrounds_prospects_v1',JSON.stri
 let gifts=JSON.parse(localStorage.getItem('refrounds_gifts_v1')||'{}');     // providerId -> [{id,ts,desc,cost}]
 let lunches=JSON.parse(localStorage.getItem('refrounds_lunches_v1')||'{}'); // clinicKey  -> [{id,ts,desc,cost}]
 const saveG=()=>{localStorage.setItem('refrounds_gifts_v1',JSON.stringify(gifts));mirror();};
+let mmReq=JSON.parse(localStorage.getItem('refrounds_mmreq_v1')||'{}');   // providerId -> free-text note for the office
+let mmSent=JSON.parse(localStorage.getItem('refrounds_mmsent_v1')||'{}'); // snapshot of what was last sent
+const saveMM=()=>{localStorage.setItem('refrounds_mmreq_v1',JSON.stringify(mmReq));mirror();};
+const saveMMSent=()=>{localStorage.setItem('refrounds_mmsent_v1',JSON.stringify(mmSent));mirror();};
+const MMF=[['street','Address'],['suite','Suite'],['city','City'],['zip','ZIP'],['state','State'],['phone','Phone'],['fax','Fax'],['email','Email']];
+function mmCurrent(id){
+  const e=edits[id]||{}, o={};
+  MMF.forEach(([k])=>{ if((e[k]||'')!=='') o[k]=e[k]; });
+  const n=(mmReq[id]||'').trim(); if(n)o._note=n;
+  return o;
+}
+function mmChanged(id){
+  const cur=mmCurrent(id), was=mmSent[id]||{};
+  if(!Object.keys(cur).length)return false;
+  return JSON.stringify(cur)!==JSON.stringify(was);
+}
+function mmPending(){ 
+  const ids=new Set([...Object.keys(edits),...Object.keys(mmReq)]);
+  return [...ids].filter(id=>byId[id]&&mmChanged(id));
+}
 const saveL=()=>{localStorage.setItem('refrounds_lunches_v1',JSON.stringify(lunches));mirror();};
 const yearOf=ts=>new Date(ts).getFullYear();
 const money=n=>'$'+(Math.round(n*100)/100).toFixed(2).replace(/\.00$/,'');
 function giftTotal(id,yr){return (gifts[id]||[]).filter(g=>yearOf(g.ts)===yr).reduce((a,g)=>a+(+g.cost||0),0);}
 function lunchTotal(k,yr){return (lunches[k]||[]).filter(g=>yearOf(g.ts)===yr).reduce((a,g)=>a+(+g.cost||0),0);}
-function composeProviders(){
-  const baseIds=new Set(baseProviders.map(p=>p.id));
+/* A prospect you added as "Jane Powell" may come back from the practice system as
+   "Powell, Jane". Compare name words regardless of order, ignoring titles, so a
+   graduating prospect is recognised instead of becoming a duplicate. */
+const NAMEDROP=new Set(['dr','doctor','md','do','np','fnp','aprn','pa','pac','pa-c','rn','jr','sr','ii','iii','iv','mr','mrs','ms']);
+function nameKey(name,city){
+  const toks=(name||'').toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(t=>t&&!NAMEDROP.has(t));
+  return toks.sort().join('|')+'@@'+(city||'').toString().toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+function migrateId(oldId,newId){
+  if(oldId===newId)return;
+  if(visited[oldId]!==undefined && visited[newId]===undefined) visited[newId]=visited[oldId];
+  delete visited[oldId];
+  if(notes[oldId]){ notes[newId]=(notes[newId]||[]).concat(notes[oldId]); delete notes[oldId]; }
+  if(gifts[oldId]){ gifts[newId]=(gifts[newId]||[]).concat(gifts[oldId]); delete gifts[oldId]; }
+  if(edits[oldId] && !edits[newId]) edits[newId]=edits[oldId];
+  delete edits[oldId];
+  if(mmReq[oldId] && !mmReq[newId]) mmReq[newId]=mmReq[oldId];
+  delete mmReq[oldId];
+  save();saveN();saveE();saveG();saveMM();
+}
+function graduateProspects(){
+  if(!prospects.length)return;
+  const byId2={}, byKey={};
+  baseProviders.forEach(p=>{ byId2[p.id]=p; byKey[nameKey(p.name,p.city)]=p; });
   const before=prospects.length;
-  prospects=prospects.filter(p=>!baseIds.has(p.id)); // graduated leads drop out; real record takes over
+  prospects=prospects.filter(pr=>{
+    const hit=byId2[pr.id]||byKey[nameKey(pr.name,pr.city)];
+    if(!hit)return true;               // still a prospect
+    migrateId(pr.id,hit.id);           // carry visits, notes, gifts and edits onto the real record
+    return false;                      // and drop the lead
+  });
   if(prospects.length!==before)saveProspects();
+}
+function composeProviders(){
+  graduateProspects();
   PROVIDERS=baseProviders.concat(prospects);
   rebuildById();
 }
@@ -575,6 +629,19 @@ function bindRows(){
 }
 
 let sheetId=null, editing=false;
+function lastContact(id){
+  let t=visited[id]||0;
+  (notes[id]||[]).forEach(n=>{ if(n.ts>t)t=n.ts; });
+  return t||0;
+}
+function sinceLabel(id){
+  const t=lastContact(id);
+  if(!t)return {txt:'Not visited yet',dim:true};
+  const days=Math.floor((Date.now()-t)/86400000);
+  if(days<=0)return {txt:'Visited today',dim:false};
+  if(days===1)return {txt:'Visited yesterday',dim:false};
+  return {txt:days+' days since last visit',dim:false};
+}
 const fmtDate=ts=>{const d=new Date(ts);return d.toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})+' \u00b7 '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});};
 function openSheet(id){sheetId=id;editing=false;staffOpen=false;renderSheet();}
 function closeSheet(){sheetId=null;editing=false;staffOpen=false;const o=document.getElementById('sheet');o.className='sheet-overlay';document.body.style.overflow='';}
@@ -606,6 +673,7 @@ function renderSheet(){
       ${tel?`<a class="sact" href="tel:${esc(tel)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>Call</a>`:''}
       ${p.email?`<a class="sact" href="mailto:${esc(p.email)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>Email</a>`:''}
     </div>
+    <div class="snapline ${sinceLabel(p.id).dim?'snap-dim':''}">${sinceLabel(p.id).txt}</div>
     ${addr?`<div class="sheet-addr">${esc(addr)}</div>`:''}
     ${p.phone?`<div class="sheet-phone"><a href="tel:${esc(tel)}">${esc(p.phone)}</a></div>`:''}
     ${p.fax?`<div class="sheet-fax">Fax: ${esc(p.fax)}</div>`:''}
@@ -808,6 +876,8 @@ function renderEdit(p){
     ${field('edPhone','Phone',p.phone,'(555) 010-0100','tel')}
     ${field('edFax','Fax',p.fax,'(555) 010-0199','tel')}
     ${field('edEmail','Email (optional)',p.email,'office@clinic.com','email')}
+    <label class="ed-label">Note for the office (optional)</label>
+    <textarea id="edMM" class="ed-input" rows="2" placeholder="e.g. retired, duplicate record, moved practices">${esc(mmReq[p.id]||'')}</textarea>
     <div class="ed-actions">
       <button class="ed-cancel" onclick="renderSheetView()">Cancel</button>
       <button class="ed-save" onclick="saveEdit()">Save changes</button>
@@ -826,7 +896,8 @@ function saveEdit(){
              o.city===((base.city&&base.city!=='Address missing')?base.city:'')&&
              o.zip===(base.zip||'')&&o.state===(base.state||'MS')&&!o.phone&&!o.fax&&!o.email;
   if(same) delete edits[sheetId]; else edits[sheetId]=o;
-  saveE(); rebuildIndex(); editing=false; renderSheet(); render();
+  const mn=val('edMM'); if(mn) mmReq[sheetId]=mn; else delete mmReq[sheetId];
+  saveE(); saveMM(); rebuildIndex(); editing=false; renderSheet(); render();
 }
 function toggleFromSheet(){
   if(visited[sheetId])delete visited[sheetId];else visited[sheetId]=Date.now();
@@ -991,13 +1062,76 @@ function doGiftReport(){
   o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
 }
 function doGiftYear(y){
-  shareOrDownload('ReferralRounds-Gifts-'+y+'.txt',buildGiftLog(y),'text/plain');
+  if(!ensureName())return;
+  shareOrDownload('ReferralRounds-Gifts'+nameTag()+'-'+y+'.txt',buildGiftLog(y),'text/plain');
+}
+function buildMMLog(onlyNew){
+  const ids=[...new Set([...Object.keys(edits),...Object.keys(mmReq)])].filter(id=>byId[id]);
+  const rows=ids.filter(id=>onlyNew?mmChanged(id):Object.keys(mmCurrent(id)).length)
+    .map(id=>({id,p:byId[id]}))
+    .sort((a,b)=>(a.p.city||'').localeCompare(b.p.city||'')||a.p.name.localeCompare(b.p.name));
+  const L=[];
+  L.push('CHANGES TO BE MADE IN MODMED');
+  if(liaisonName)L.push('From: '+liaisonName);
+  L.push(new Date().toLocaleString());
+  L.push(onlyNew?'New or updated since the last batch.':'All corrections on file.');
+  L.push('');
+  if(!rows.length){L.push('Nothing to submit \u2014 everything on file has already been sent.');return L.join('\n');}
+  L.push(rows.length+' provider'+(rows.length==1?'':'s')+' need'+(rows.length==1?'s':'')+' updating.');
+  let city='';
+  rows.forEach(({id,p})=>{
+    if(p.city!==city){city=p.city;L.push('');L.push('== '+(city||'Address missing')+' ==');}
+    L.push('');
+    L.push(p.name+(p.type?', '+p.type:''));
+    const e=edits[id]||{};
+    MMF.forEach(([k,label])=>{
+      const nv=(e[k]||'').trim(); if(!nv)return;
+      const ov=(p[k]||'').trim();
+      if(nv===ov)return;
+      L.push('   '+label+':  '+(ov||'(blank)')+'   \u2192   '+nv);
+    });
+    const note=(mmReq[id]||'').trim();
+    if(note)L.push('   Note: '+note);
+  });
+  L.push('');
+  L.push('Sent from Referral Rounds. Old value on the left, correction on the right.');
+  return L.join('\n');
+}
+function openMM(){
+  const pend=mmPending().length;
+  const all=[...new Set([...Object.keys(edits),...Object.keys(mmReq)])].filter(id=>byId[id]&&Object.keys(mmCurrent(id)).length).length;
+  const o=document.getElementById('sheet');
+  o.innerHTML=`<div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head"><div style="flex:1"><div class="sheet-name">ModMed change requests</div></div>
+    <button class="sheet-x" onclick="closeSheet()">\u2715</button></div>
+    <div class="sheet-sub">${pend?`<b>${pend}</b> correction${pend==1?'':'s'} not yet sent`:'Everything on file has already been sent.'} \u00b7 ${all} total on file.</div>
+    <div class="rep-btns">
+      <button class="wbtn wprimary" onclick="doMM(true)">Send new changes</button>
+      <button class="wbtn wghost" onclick="doMM(false)">Send everything</button>
+    </div>
+    ${pend?`<button class="staff-add" onclick="markMMSent()">Mark all as sent</button>`:''}
+  </div>`;
+  o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
+}
+function doMM(onlyNew){
+  if(!ensureName())return;
+  shareOrDownload('ModMed-Changes'+nameTag()+'-'+stamp()+'.txt',buildMMLog(onlyNew),'text/plain');
+  setTimeout(()=>{
+    if(confirm('Mark these as sent, so they stay off the next list?')) markMMSent();
+  },600);
+}
+function markMMSent(){
+  const ids=[...new Set([...Object.keys(edits),...Object.keys(mmReq)])].filter(id=>byId[id]);
+  ids.forEach(id=>{ const c=mmCurrent(id); if(Object.keys(c).length)mmSent[id]=c; });
+  saveMMSent(); closeSheet(); render();
 }
 function doReport(range){
-  const inp=document.getElementById('repName'); liaisonName=(inp?inp.value:'').trim();
-  localStorage.setItem('refrounds_name',liaisonName);
+  const inp=document.getElementById('repName'); const typed=(inp?inp.value:'').trim();
+  if(typed){ liaisonName=typed; localStorage.setItem('refrounds_name',liaisonName); }
+  if(!ensureName())return;
   const lab=range==='week'?'Week':range==='month'?'Month':'All';
-  shareOrDownload('ReferralRounds-Report-'+lab+'-'+stamp()+'.txt',buildLog(range),'text/plain');
+  shareOrDownload('ReferralRounds-Report'+nameTag()+'-'+lab+'-'+stamp()+'.txt',buildLog(range),'text/plain');
 }
 function seedSampleActivity(){
   const day=86400000, now=Date.now(); visited={}; notes={};
@@ -1073,6 +1207,9 @@ function openDataSheet(){
     <button class="drow" onclick="doGiftReport()">
       <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18"/><path d="M12 8S9.5 3 7.5 4.5 9 8 12 8Zm0 0s2.5-5 4.5-3.5S15 8 12 8Z"/></svg></span>
       <span class="dt"><b>Gifts &amp; lunches</b><span>Yearly totals by provider and office \u2014 for budgeting and your compliance log</span></span></button>
+    <button class="drow" onclick="openMM()">
+      <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg></span>
+      <span class="dt"><b>ModMed change requests</b><span>${mmPending().length?mmPending().length+' correction'+(mmPending().length==1?'':'s')+' ready to send to the office':'Send address and phone corrections to your office manager'}</span></span></button>
     <button class="drow" onclick="doBackup()">
       <span class="di"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg></span>
       <span class="dt"><b>Back up data</b><span>Full backup file to move to a new phone</span></span></button>
@@ -1085,8 +1222,20 @@ function openDataSheet(){
   </div>`;
   o.className='sheet-overlay show';o.onclick=closeSheet;document.body.style.overflow='hidden';
 }
-function doCallLog(){shareOrDownload('ReferralRounds-CallLog-'+stamp()+'.txt',buildCallLog(),'text/plain');}
-function doBackup(){const data=JSON.stringify(snapshot());localStorage.setItem('refrounds_lastbackup',String(Date.now()));shareOrDownload('ReferralRounds-Backup-'+stamp()+'.json',data,'application/json');render();}
+function doCallLog(){if(!ensureName())return;shareOrDownload('ReferralRounds-CallLog'+nameTag()+'-'+stamp()+'.txt',buildCallLog(),'text/plain');}
+function nameTag(){
+  const n=(liaisonName||'').trim().replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  return n?'-'+n:'';
+}
+function ensureName(){
+  if((liaisonName||'').trim())return true;
+  const n=prompt('Whose app is this?\n\nYour name goes on every report and backup you send, so your manager knows which is yours.');
+  if(n===null)return false;
+  liaisonName=n.trim();
+  localStorage.setItem('refrounds_name',liaisonName);
+  return true;
+}
+function doBackup(){if(!ensureName())return;const data=JSON.stringify(snapshot());localStorage.setItem('refrounds_lastbackup',String(Date.now()));shareOrDownload('ReferralRounds-Backup'+nameTag()+'-'+stamp()+'.json',data,'application/json');render();}
 function daysSinceBackup(){
   const t=+localStorage.getItem('refrounds_lastbackup')||0;
   if(!t)return null;
@@ -1109,8 +1258,8 @@ document.getElementById('restorefile').addEventListener('change',e=>{
       if(d.app!=='ReferralRounds'||!d.notes||!d.visited)throw 0;
       const nN=Object.keys(d.notes).length,nV=Object.keys(d.visited).length;
       if(confirm('Restore '+nV+' visited marks and notes for '+nN+' providers? This replaces what is on this device now.')){
-        visited=d.visited;notes=d.notes;edits=d.edits||{};staff=d.staff||{};prospects=d.prospects||[];gifts=d.gifts||{};lunches=d.lunches||{};if(d.liaisonName){liaisonName=d.liaisonName;localStorage.setItem('refrounds_name',liaisonName);}
-        save();saveN();saveE();saveS();saveProspects();saveG();saveL();composeProviders();rebuildIndex();tally();closeSheet();render();
+        visited=d.visited;notes=d.notes;edits=d.edits||{};staff=d.staff||{};prospects=d.prospects||[];gifts=d.gifts||{};lunches=d.lunches||{};mmReq=d.mmReq||{};mmSent=d.mmSent||{};if(d.liaisonName){liaisonName=d.liaisonName;localStorage.setItem('refrounds_name',liaisonName);}
+        save();saveN();saveE();saveS();saveProspects();saveG();saveL();saveMM();saveMMSent();composeProviders();rebuildIndex();tally();closeSheet();render();
         alert('Backup restored.');
       }
     }catch(err){alert('That file is not a Referral Rounds backup.');}
