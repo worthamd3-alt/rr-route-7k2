@@ -187,16 +187,82 @@ function credNorm(v){v=(v||'').toString().toUpperCase().replace(/\./g,'').trim()
 const CITYFIX={'holley springs':'Holly Springs','misissippi state':'Mississippi State','misissippi state university':'Mississippi State','mississippi state university':'Mississippi State'};
 function fixCity(v){v=(v||'').toString().replace(/[ ,.]+$/,'').trim(); if(!v)return 'Address missing'; const t=tcase(v).replace(/\s+/g,' '); return CITYFIX[t.toLowerCase()]||t;}
 
+
+/* ===== DATA GUARDS, ported from the app 2026-10-12 =====================================
+   This report parses the ModMed export itself and used to take every row at face value,
+   which is why it opened with a physician called None at 3,549 and then six of SOG's own
+   doctors. Everything below exists to stop that. Keep it in step with index.html. */
+
+/* The count column, picked defensively: the export carries BOTH "Patient Count (Unique)"
+   and "Appointment Count", and the bare key 'count' matches the wrong one. */
+function pickCountCol(H){
+  const safe=H.filter(h=>!/appointment|encounter|visit/i.test(String(h||'')));
+  return pickCol(safe,'patient count','unique','count','referrals','volume')
+      || pickCol(H,'patient count','unique');
+}
+/* A row with no referring provider does not arrive empty - ModMed writes "None". */
+const JUNKNAMES=['none','n/a','na','null','-','--','unknown','not specified','no referring provider','self','self referral','self-referral'];
+function junkName(v){
+  const t=(v==null?'':String(v)).toLowerCase().replace(/\s+/g,' ').trim().replace(/[.,]+$/,'');
+  if(!t) return true;
+  if(JUNKNAMES.indexOf(t)>=0) return true;
+  return !/[a-z]/.test(t);
+}
+/* Our own practice, as the export spells it. */
+const OWN_PRACTICE=['specialty orthopedic','specialty orthopaedic'];
+function isOwnPractice(v){
+  const t=(v==null?'':String(v)).toLowerCase().replace(/\s+/g,' ').trim();
+  return !!t && OWN_PRACTICE.some(k=>t.indexOf(k)>=0);
+}
+/* One person, word order ignored: the export says "Altmyer, Chad", the app stores
+   "Chad Altmyer", and a shadow says "DONOTUSEAltmyer, Chad". All three key the same. */
+function personKey(v){
+  return (v==null?'':String(v)).toLowerCase().replace(/x?donotuse/g,' ')
+    .split(/[^a-z]+/).filter(Boolean).sort().join('');
+}
+/* The name as a person should read it. Display only. */
+function showName(v){
+  const t=String(v==null?'':v).replace(/[Xx]?[Dd][Oo][Nn][Oo][Tt][Uu][Ss][Ee]/g,'').replace(/\s{2,}/g,' ').trim();
+  return t.replace(/^[,\s]+/,'').trim()||String(v==null?'':v);
+}
+/* ====================================================================================== */
+
 function parseMaster(buf){
   const wb=XLSX.read(buf,{type:'array'});
   const ws=wb.Sheets[wb.SheetNames[0]];
   const data=XLSX.utils.sheet_to_json(ws,{defval:''});
   if(!data.length) throw new Error('empty');
   const H=Object.keys(data[0]);
-  const col={cnt:pickCol(H,'patient count','count','referrals','volume'),name:pickCol(H,'provider name','name'),city:pickCol(H,'city'),state:pickCol(H,'state'),suf:pickCol(H,'suffix','credential','degree'),addr:pickCol(H,'address line 1','address 1','address1','street','address'),suite:pickCol(H,'address line 2','address 2','address2','suite','ste'),zip:pickCol(H,'zip','postal')};
+  const col={cnt:pickCountCol(H),npi:pickCol(H,'npi'),prac:pickCol(H,'practice name','practice','group name','organization'),name:pickCol(H,'provider name','name'),city:pickCol(H,'city'),state:pickCol(H,'state'),suf:pickCol(H,'suffix','credential','degree'),addr:pickCol(H,'address line 1','address 1','address1','street','address'),suite:pickCol(H,'address line 2','address 2','address2','suite','ste'),zip:pickCol(H,'zip','postal')};
   if(!col.name||!col.cnt) throw new Error('cols');
+  /* TWO PASSES over the file, because one is not enough to find our own physicians.
+     Matching on Practice Name catches the obvious rows; another 19 sit in the export
+     with a BLANK practice name - the DONOTUSE shadow records - and carry real volume.
+     Pass one learns our NPIs and names from the rows that DO say Specialty Orthopedic;
+     pass two drops anything matching either, whatever its practice column says. */
+  const ownNpi={}, ownName={};
+  if(col.prac) data.forEach(r=>{
+    if(!isOwnPractice(r[col.prac])) return;
+    const v=String(r[col.npi]==null?'':r[col.npi]).replace(/\D/g,'');
+    if(v.length===10 && !/^0+$/.test(v)) ownNpi[v]=1;   /* 0000000000 is a shared placeholder, never an identity */
+    const k=personKey(r[col.name]); if(k) ownName[k]=1;
+  });
+  function isOurs(r){
+    if(col.prac && isOwnPractice(r[col.prac])) return true;
+    const v=String(r[col.npi]==null?'':r[col.npi]).replace(/\D/g,'');
+    if(v.length===10 && ownNpi[v]) return true;
+    const k=personKey(r[col.name]);
+    return !!(k && ownName[k]);
+  }
+  let dropOwn=0, dropJunk=0;
   const groups={};
-  data.forEach(r=>{const nm=(r[col.name]||'').toString().trim(); if(!nm)return; const city=fixCity(col.city?r[col.city]:''); (groups[nm+'||'+city]=groups[nm+'||'+city]||[]).push(r);});
+  data.forEach(r=>{
+    const nm=(r[col.name]||'').toString().trim(); if(!nm)return;
+    if(junkName(nm)){ dropJunk++; return; }
+    if(isOurs(r)){ dropOwn++; return; }
+    const city=fixCity(col.city?r[col.city]:'');
+    (groups[nm+'||'+city]=groups[nm+'||'+city]||[]).push(r);
+  });
   const byId={}, byCity={}; let total=0, seen={};
   Object.keys(groups).forEach(k=>{
     const rows=groups[k]; const top=rows[0];
@@ -205,10 +271,38 @@ function parseMaster(buf){
     let typ=''; if(col.suf){for(const r of rows){const c=credNorm(r[col.suf]);if(c){typ=c;break;}}}
     let addr1='',zip='',state='',suite=''; for(const r of rows){ if(!addr1 && col.addr && (r[col.addr]||'').toString().trim()) addr1=(r[col.addr]||'').toString().trim(); if(!zip && col.zip && (r[col.zip]||'').toString().trim()) zip=(r[col.zip]||'').toString().trim(); if(!state && col.state && (r[col.state]||'').toString().trim()) state=(r[col.state]||'').toString().trim().toUpperCase(); if(!suite && col.suite && (r[col.suite]||'').toString().trim()) suite=(r[col.suite]||'').toString().trim(); }
     let base=(idName(nm)+'__'+jslug(city))||'p', id=base, i=2; while(seen[id]){id=base+'_'+(i++);} seen[id]=1;
-    const prov={id,name:fmtName(nm),city,count,type:typ,addr1,suite,zip,state};
+    /* The DONOTUSE marker comes off the DISPLAYED name. The id above is still built from
+       the raw text, so it keeps matching a liaison backup's visited ids. */
+    let npi=''; if(col.npi){ for(const r of rows){ const v=String(r[col.npi]||'').replace(/\D/g,'');
+      if(v.length===10 && !/^0+$/.test(v)){ npi=v; break; } } }
+    const prov={id,name:fmtName(showName(nm)),city,count,type:typ,addr1,suite,zip,state,npi};
     byId[id]=prov; (byCity[city]=byCity[city]||[]).push(prov); total++;
   });
-  return {byId,byCity,total,list:Object.values(byId)};
+  /* COMBINE RECORDS THAT SHARE AN NPI. One physician with two charts in ModMed appears
+     here as two providers, and the damage lands hardest on the year-over-year section:
+     if intake picked the other chart more often this year, the record on this page falls
+     off a cliff and reads as a lost account. Hannah Boren showed 272 -> 100, a -172 that
+     never happened - her other chart absorbed it.
+     An NPI is the one identifier a physician actually owns, so combining on it is safe
+     here in a way it is not in the liaison's app: this page is read-only over one file,
+     with nothing to double-count at the next import. The surviving record is the one
+     with the most volume, so the name and address shown are the ones intake uses most. */
+  const byNpi={};
+  Object.values(byId).forEach(p=>{ if(p.npi) (byNpi[p.npi]=byNpi[p.npi]||[]).push(p); });
+  let combined=0;
+  Object.keys(byNpi).forEach(n=>{
+    const g=byNpi[n]; if(g.length<2) return;
+    g.sort((a,b)=>b.count-a.count);
+    const keep=g[0];
+    g.slice(1).forEach(dead=>{
+      keep.count+=dead.count;
+      delete byId[dead.id];
+      const arr=byCity[dead.city]; if(arr){ const i=arr.indexOf(dead); if(i>=0) arr.splice(i,1); }
+      total--; combined++;
+    });
+    keep.merged=g.length;      /* so a reader can see this row is two charts added together */
+  });
+  return {byId,byCity,total,list:Object.values(byId),dropOwn,dropJunk,combined};
 }
 
 // ---------- clinic rollup: group providers by normalized Address Line 1 + Zip ----------
