@@ -1,0 +1,1371 @@
+<!--MGRBUILD:2026.10.21e--><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Referral Rounds — Manager Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--paper:#f7f4ee;--ink:#1c2826;--accent:#0d6b5f;--accent-soft:#dcefe9;--line:#e4ddd0;--muted:#6f7d79;--gold:#b8852a;--card:#fffdf9;--red:#b23b3b;--redsoft:#f7ded9;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:820px;margin:0 auto;padding:22px 18px 60px;}
+h1{font-family:ui-serif,"New York",Georgia,serif;font-size:30px;letter-spacing:-.02em;font-weight:650;}
+h1 .dot{color:var(--accent);}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 20px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px;margin-bottom:14px;}
+.sec{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);margin-bottom:11px;}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:0 0 5px;}
+input[type=text],input[type=number],select{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);margin-bottom:12px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:15px;font-weight:650;padding:12px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--accent);cursor:pointer;}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);width:100%;font-size:16px;padding:14px;}
+.btn.primary:active{transform:scale(.99);}
+.btn.block{width:100%;margin-bottom:10px;}
+.btn:disabled{opacity:.5;}
+.status{font-size:13px;color:var(--ink);margin:4px 0 8px;min-height:16px;}
+.filelist{margin:6px 0 4px;}
+.fileitem{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px;}
+.fileitem input{flex:1;margin:0;padding:8px 10px;font-size:15px;}
+.fileitem .rm{background:none;border:none;color:var(--red);font-weight:700;font-size:18px;cursor:pointer;padding:2px 6px;}
+.hint{font-size:12px;color:var(--muted);margin:2px 0 10px;line-height:1.4;}
+/* report */
+#report{display:none;margin-top:8px;}
+.rhead{border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:16px;}
+.rhead .prac{font-family:ui-serif,Georgia,serif;font-size:24px;font-weight:650;}
+.rhead .meta{color:var(--muted);font-size:13px;margin-top:3px;}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px;}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 14px;text-align:center;}
+.tile .n{font-family:ui-serif,Georgia,serif;font-size:26px;font-weight:700;color:var(--accent);}
+.tile .l{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.25;}
+.tile.warn .n{color:var(--red);}
+table{width:100%;border-collapse:collapse;margin-bottom:6px;}
+th,td{text-align:left;font-size:14px;padding:9px 8px;border-bottom:1px solid var(--line);}
+th{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+.blocktitle{font-family:ui-serif,Georgia,serif;font-size:18px;font-weight:650;margin:22px 0 8px;}
+.blocknote{font-size:12.5px;color:var(--muted);margin-bottom:8px;}
+/* one muted line under a heading saying WHICH clock the block runs on — the page
+   mixes three (quarterly grading, monthly totals, month-over-month) and nothing
+   used to say so. */
+.clock{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:-4px 0 10px;}
+.gap-count{font-size:13px;color:var(--red);font-weight:600;}
+.lbcols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:6px;}
+@media(max-width:620px){.lbcols{grid-template-columns:1fr;gap:6px;}}
+.lbhead{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin:2px 0 4px;}
+.lbhead.up{color:var(--accent);} .lbhead.down{color:var(--red);}
+td.up{color:var(--accent);font-weight:700;} td.down{color:var(--red);font-weight:700;}
+.tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:1px;margin-left:4px;}
+.tag.new{background:var(--accent-soft);color:var(--accent);}
+.tag.drop{background:var(--redsoft);color:var(--red);}
+.rank{color:var(--muted);font-variant-numeric:tabular-nums;}
+.citybar{height:7px;background:var(--line);border-radius:4px;overflow:hidden;width:120px;display:inline-block;vertical-align:middle;}
+.citybar i{display:block;height:100%;background:var(--accent);}
+.pct{font-size:12px;color:var(--muted);margin-left:8px;}
+.covrow td:first-child{font-weight:600;}
+.printbtn{margin-top:20px;}
+@media print{
+  body{background:#fff;}
+  .noprint{display:none!important;}
+  #report{display:block!important;}
+  .wrap{max-width:100%;padding:0;}
+  .tile,.card{break-inside:avoid;}
+}
+.brandfoot{max-width:940px;margin:34px auto 0;padding:14px 18px 6px;border-top:1px solid var(--line);text-align:center;font-size:12.5px;color:var(--muted);letter-spacing:.2px;}
+.brandfoot b{font-family:ui-serif,"New York",Georgia,serif;font-weight:650;color:var(--ink);letter-spacing:-.01em;}
+.brandfoot .tm{font-size:8.5px;vertical-align:6px;margin-left:1px;}
+.brandfoot .bfsep{margin:0 7px;color:var(--line);}
+@media print{.brandfoot{border-top:1px solid #ddd;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="noprint">
+    <h1>Referral Rounds<span class="dot">.</span> <span style="font-family:inherit;font-size:18px;font-weight:600;color:var(--muted);letter-spacing:0;">Manager Report</span></h1>
+    <div class="sub">Combine documented physician outreach across your liaison team into one practice-wide report.</div>
+
+    <div id="savedBar" style="display:none;margin:0 0 16px;padding:11px 13px;border-radius:9px;background:#eef6ef;border:1px solid #c7e0cb;color:#2c5233;font-size:13px;line-height:1.45"></div>
+
+    <div class="card">
+      <div class="sec">Step 1 · Referral report</div>
+      <label>Reporting-month CRM download</label>
+      <button class="btn block" onclick="document.getElementById('masterfile').click()">Import reporting-month download (.xlsx)</button>
+      <input type="file" id="masterfile" accept=".xlsx,.xls,.csv" style="display:none">
+      <div class="status" id="masterStatus">No referral download loaded yet.</div>
+      <div class="hint">The CRM/EMR referral download for the month you're reporting on &mdash; the spreadsheet (.xlsx or .csv) with one row per referring provider and their referral count. It's the same file you load into the Route Planner. <b>This is not a liaison backup</b> &mdash; the .json backup files go in Step 2.</div>
+      <div style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px">
+        <label style="margin-bottom:8px"><b>Optional</b> &mdash; previous-month CRM download, to see who's climbing and slipping</label>
+        <button class="btn block" onclick="document.getElementById('priorfile').click()">Import previous-month download (.xlsx)</button>
+        <input type="file" id="priorfile" accept=".xlsx,.xls,.csv" style="display:none">
+        <div class="status" id="priorStatus">No previous-month download loaded.</div>
+        <div class="hint">The same CRM download from the month before &mdash; e.g. reporting on July, load June here. The report compares the two months to show who's climbing and who's slipping. Both must be the same kind of download (both single-month, or both year-to-date) so the numbers line up. Skip it and everything else still works.</div>
+      </div>
+      <div id="swapWarn" style="display:none;margin-top:12px;padding:10px 12px;border-radius:8px;background:#fff4e5;border:1px solid #f0c37a;color:#7a4a00;font-size:13px;line-height:1.4"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Step 2 · Liaison backups</div>
+      <label>Add each liaison's backup file (.json)</label>
+      <button class="btn block" onclick="document.getElementById('backupfile').click()">Import Liaison Backup</button>
+      <input type="file" id="backupfile" accept=".json,application/json" multiple style="display:none">
+      <div class="hint">Each liaison exports <b>Back up data</b> from their app and sends you the file. Add as many as you have — name each one so the report shows who's who.</div>
+      <div class="filelist" id="fileList"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Step 3 · Report settings</div>
+      <label>Practice name (shown on the report)</label>
+      <input type="text" id="pracName" placeholder="e.g. North Mississippi Orthopedics">
+      <label>Count coverage against providers with at least</label>
+      <input type="number" id="covMin" value="6" min="1" step="1">
+      <div class="hint" style="margin:5px 0 12px">referrals in the download you loaded above. Coverage and the gap list ignore anyone below this, so <b>100% means every provider at or above it has been reached</b>. Raise it to judge the team on the relationships that matter most; set it to 1 to measure against every provider in the file. It is your call, and changing it never alters anyone&rsquo;s data &mdash; only what this report counts.</div>
+      <label>Activity period</label>
+      <select id="period" onchange="onPeriodChange()">
+        <option value="week">This week</option>
+        <option value="month" selected>This month</option>
+        <option value="lastmonth">Last month</option>
+        <option value="year">This year</option>
+        <option value="all">All time</option>
+        <option value="custom">Custom range&hellip;</option>
+      </select>
+      <div id="customRange" style="display:none;margin:8px 0 0">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:130px"><label style="margin-top:0">From</label><input type="date" id="customStart"></div>
+          <div style="flex:1;min-width:130px"><label style="margin-top:0">To</label><input type="date" id="customEnd"></div>
+        </div>
+      </div>
+      <button class="btn primary" id="genBtn" onclick="generate()" disabled>Generate report</button>
+    </div>
+  </div>
+
+  <div id="report"></div>
+  <button class="btn primary printbtn noprint" id="printBtn" onclick="window.print()" style="display:none">Print / Save this report</button>
+</div>
+
+<script>
+// ---------- state ----------
+let master=null;            // {byId, byCity, list, total}
+let priorMaster=null;       // optional earlier report, drives gainers/decliners
+let backups=[];             // [{id, label, visited, notes}]
+let masterName='', priorName='', masterMK=null, priorMK=null;  // filenames + parsed year-month keys, for the swap warning
+
+// Best-effort year-month pulled from a download's filename ("...July 2026...",
+// "2026-07", "07-2026"). Returns YYYY*12+MM, or null when nothing parses. Feeds ONLY
+// the soft "files look swapped" warning below — it never blocks or changes the report.
+function fileMonthKey(fn){
+  const s=(fn||'').toLowerCase();
+  const mons={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  let m=s.match(/(20\d{2})[._\-\/ ]?(0[1-9]|1[0-2])(?![0-9])/);            // 2026-07
+  if(m) return (+m[1])*12+(+m[2]);
+  m=s.match(/(?:^|[^0-9])(0[1-9]|1[0-2])[._\-\/ ](20\d{2})/);              // 07-2026
+  if(m) return (+m[2])*12+(+m[1]);
+  m=s.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?[ _\-]*(20\d{2})?/); // july 2026 / jul
+  if(m){ const mo=mons[m[1]]; const yr=m[2]?(+m[2]):new Date().getFullYear(); return yr*12+mo; }
+  return null;
+}
+function checkSwap(){
+  const w=document.getElementById('swapWarn'); if(!w)return;
+  if(masterMK!=null && priorMK!=null && priorMK>masterMK){
+    w.style.display='block';
+    w.innerHTML='\u26A0\uFE0F These look swapped \u2014 your <b>previous-month</b> file ('+esc(priorName)+') looks newer than your <b>reporting-month</b> file ('+esc(masterName)+'). Gaining / slipping will read backwards. The newer month goes in the <b>top</b> slot, the older month on the bottom.';
+  } else { w.style.display='none'; }
+}
+
+// ---------- ModMed parse (mirrors the app's import pipeline) ----------
+function pickCol(headers,...keys){
+  const H=headers.map(h=>({raw:h,n:(h||'').toString().toLowerCase().replace(/\s+/g,' ').trim()}));
+  for(const k of keys){ const hit=H.find(x=>x.n.includes(k)); if(hit) return hit.raw; }
+  return null;
+}
+function jslug(v){return (v||'').toString().toLowerCase().replace(/[^a-z0-9]/g,'');}
+function tcase(v){v=(v||'').toString().trim().toLowerCase(); return v?v.replace(/\b\w/g,c=>c.toUpperCase()):'';}
+function fmtName(v){v=(v||'').toString().trim().toLowerCase(); if(v.includes(',')){const [l,f]=v.split(',');return (f.trim()+' '+l.trim()).replace(/\b\w/g,c=>c.toUpperCase());} return v.replace(/\b\w/g,c=>c.toUpperCase());}
+// Build the provider ID the SAME way the app does: last-name + first-name, slugged.
+// Works whether the export lists names "Last, First" or "First Last", so backup
+// visited IDs line up with the report's master IDs (this is what coverage matches on).
+function idName(v){ v=(v||'').toString().trim(); let last='',first=''; if(v.includes(',')){const p=v.split(','); last=p[0]; first=p.slice(1).join(' ');} else {const p=v.split(/\s+/); last=p.pop()||''; first=p.join(' ');} return jslug(last)+jslug(first); }
+function credNorm(v){v=(v||'').toString().toUpperCase().replace(/\./g,'').trim();const m={MD:'MD',DO:'DO',NP:'NP',FNP:'FNP',CFNP:'FNP',FNPBC:'FNP',FNPC:'FNP',APRN:'APRN',PAC:'PA-C'};return(['JR','SR','II','III',''].includes(v))?'':(m[v]||'');}
+const CITYFIX={'holley springs':'Holly Springs','misissippi state':'Mississippi State','misissippi state university':'Mississippi State','mississippi state university':'Mississippi State'};
+function fixCity(v){v=(v||'').toString().replace(/[ ,.]+$/,'').trim(); if(!v)return 'Address missing'; const t=tcase(v).replace(/\s+/g,' '); return CITYFIX[t.toLowerCase()]||t;}
+
+
+/* ===== DATA GUARDS, ported from the app 2026-10-12 =====================================
+   This report parses the ModMed export itself and used to take every row at face value,
+   which is why it opened with a physician called None at 3,549 and then six of SOG's own
+   doctors. Everything below exists to stop that. Keep it in step with index.html. */
+
+/* The count column, picked defensively: the export carries BOTH "Patient Count (Unique)"
+   and "Appointment Count", and the bare key 'count' matches the wrong one. */
+function pickCountCol(H){
+  const safe=H.filter(h=>!/appointment|encounter|visit/i.test(String(h||'')));
+  return pickCol(safe,'patient count','unique','count','referrals','volume')
+      || pickCol(H,'patient count','unique');
+}
+/* A row with no referring provider does not arrive empty - ModMed writes "None". */
+const JUNKNAMES=['none','n/a','na','null','-','--','unknown','not specified','no referring provider','self','self referral','self-referral'];
+function junkName(v){
+  const t=(v==null?'':String(v)).toLowerCase().replace(/\s+/g,' ').trim().replace(/[.,]+$/,'');
+  if(!t) return true;
+  if(JUNKNAMES.indexOf(t)>=0) return true;
+  return !/[a-z]/.test(t);
+}
+/* Our own practice, as the export spells it. */
+const OWN_PRACTICE=['specialty orthopedic','specialty orthopaedic'];
+/* MOVED UP, 10.21b. normAddr folds these, ownSiteKey calls normAddr, and notAReferrer
+   calls ownSiteKey from the compose that runs partway down this file - well before the
+   line this table used to sit on. A `const` is in its temporal dead zone until its own
+   line executes, so the whole page died with "Cannot access 'ABBR' before
+   initialization". Declared here instead, above every caller. normAddr itself is a
+   function declaration and hoists, so it can stay where it reads best. */
+const ABBR={street:'st',str:'st',drive:'dr',road:'rd',avenue:'ave',av:'ave',boulevard:'blvd',highway:'hwy',hway:'hwy',lane:'ln',court:'ct',circle:'cir',parkway:'pkwy',place:'pl',suite:'ste',building:'bldg',north:'n',south:'s',east:'e',west:'w',northeast:'ne',northwest:'nw',southeast:'se',southwest:'sw'};
+/* OUR OWN FRONT DOOR, 10.21a. Kept character-for-character in step with the app's copy
+   in index.html - the two must agree or a provider is in one and not the other.
+   Hannah Boren's SOG chart sits at an SOG address carrying SOG's switchboard, but its
+   Practice Name is blank and the chart is marked DONOTUSE, so NOT ONE ROW in the export
+   says she works here: the two passes below can only learn from rows that name the
+   practice, so her NPI was never in the set and her name was never in the set. Her 49
+   year-to-date patients were counted as an outside referrer, and she showed up on
+   Worth's report. Teresa Gillespie, 26, the same.
+   Neither half of the pair is safe alone - a medical park holds other practices, and a
+   switchboard can be mis-keyed onto an outside record. Both together is ours. */
+function ownSiteKey(street,city,phone){
+  /* THROUGH normAddr, not raw characters. ModMed spells our own front door at least
+     four ways in one export - "1211 S GLOSTER ST, SUITE A", "1211 S GLOSTER ST STE A",
+     "1211 S GLOSTER ST" and "1211 SOUTH GLOSTER ST". Comparing characters made SUITE A
+     and STE A different places, so this rule caught Hannah Boren only because one
+     SOG-named row happened to be spelled the way her chart was; next month's export
+     could spell them differently and she would be back. normAddr folds suite/ste,
+     south/s and street/st exactly the way clinicKey does, so all four agree. */
+  const a=normAddr(street).replace(/[^a-z0-9]/g,'');
+  const c=String(city==null?'':city).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const p=String(phone==null?'':phone).replace(/\D/g,'');
+  if(!a||!c||p.length!==10||/^0+$/.test(p)) return '';
+  return a+'::'+c+'::'+p;
+}
+/* One person in one town, for matching an export row against a backup record. */
+function whoKey(name,city){
+  const n=personKey(name);
+  const c=String(city==null?'':city).toLowerCase().replace(/[^a-z0-9]/g,'');
+  return (n&&c) ? n+'::'+c : '';
+}
+function isOwnPractice(v){
+  const t=(v==null?'':String(v)).toLowerCase().replace(/\s+/g,' ').trim();
+  return !!t && OWN_PRACTICE.some(k=>t.indexOf(k)>=0);
+}
+/* One person, word order ignored: the export says "Altmyer, Chad", the app stores
+   "Chad Altmyer", and a shadow says "DONOTUSEAltmyer, Chad". All three key the same. */
+function personKey(v){
+  return (v==null?'':String(v)).toLowerCase().replace(/x?donotuse/g,' ')
+    .split(/[^a-z]+/).filter(Boolean).sort().join('');
+}
+/* The name as a person should read it. Display only. */
+function showName(v){
+  const t=String(v==null?'':v).replace(/[Xx]?[Dd][Oo][Nn][Oo][Tt][Uu][Ss][Ee]/g,'').replace(/\s{2,}/g,' ').trim();
+  return t.replace(/^[,\s]+/,'').trim()||String(v==null?'':v);
+}
+/* ====================================================================================== */
+
+function parseMaster(buf){
+  const wb=XLSX.read(buf,{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+  if(!data.length) throw new Error('empty');
+  const H=Object.keys(data[0]);
+  const col={cnt:pickCountCol(H),npi:pickCol(H,'npi'),prac:pickCol(H,'practice name','practice','group name','organization'),name:pickCol(H,'provider name','name'),city:pickCol(H,'city'),state:pickCol(H,'state'),suf:pickCol(H,'suffix','credential','degree'),addr:pickCol(H,'address line 1','address 1','address1','street','address'),suite:pickCol(H,'address line 2','address 2','address2','suite','ste'),zip:pickCol(H,'zip','postal'),phone:pickCol(H,'work phone','phone')};
+  if(!col.name||!col.cnt) throw new Error('cols');
+  /* TWO PASSES over the file, because one is not enough to find our own physicians.
+     Matching on Practice Name catches the obvious rows; another 19 sit in the export
+     with a BLANK practice name - the DONOTUSE shadow records - and carry real volume.
+     Pass one learns our NPIs and names from the rows that DO say Specialty Orthopedic;
+     pass two drops anything matching either, whatever its practice column says. */
+  const ownNpi={}, ownName={}, ownSite={};
+  if(col.prac) data.forEach(r=>{
+    if(!isOwnPractice(r[col.prac])) return;
+    const v=String(r[col.npi]==null?'':r[col.npi]).replace(/\D/g,'');
+    if(v.length===10 && !/^0+$/.test(v)) ownNpi[v]=1;   /* 0000000000 is a shared placeholder, never an identity */
+    const k=personKey(r[col.name]); if(k) ownName[k]=1;
+    /* our own addresses and switchboard, for the charts ModMed never labelled at all */
+    const sk=ownSiteKey(col.addr?r[col.addr]:'', col.city?r[col.city]:'', col.phone?r[col.phone]:'');
+    if(sk) ownSite[sk]=1;
+  });
+  function isOurs(r){
+    if(col.prac && isOwnPractice(r[col.prac])) return true;
+    /* OUR ADDRESS ON OUR LINE, checked BEFORE the NPI rail on purpose: Hannah Boren
+       carries a real NPI, and because no row ever named her as ours the rail below would
+       read that NPI as proof she is an outside referrer. See ownSiteKey. */
+    const sk=ownSiteKey(col.addr?r[col.addr]:'', col.city?r[col.city]:'', col.phone?r[col.phone]:'');
+    if(sk && ownSite[sk]) return true;
+    /* A REAL NPI OUTRANKS THE NAME. Two physicians can share a name, and one of ours
+       sharing it with an outside referrer is not rare: Hannah Pittman works here AND a
+       Hannah Pittman in Clarksdale sent 37 patients this year; David Lee works here AND a
+       David Lee in Greenville sent 10. Matching on the name alone threw both off the
+       report. An NPI is permanent and unique to one person, so a usable one settles the
+       question by itself, either way; the name is consulted only when there is none.
+       0000000000 is a placeholder many providers share - never an identity. */
+    const v=String(r[col.npi]==null?'':r[col.npi]).replace(/\D/g,'');
+    if(v.length===10 && !/^0+$/.test(v)) return !!ownNpi[v];
+    const k=personKey(r[col.name]);
+    return !!(k && ownName[k]);
+  }
+  let dropOwn=0, dropJunk=0;
+  /* WHO IS OURS, by person and town, 10.21a. The export is only half the report: every
+     block that names a provider by id - the book, year over year, the stopped lists, the
+     movers - is built from the liaison's BACKUP, which this filter never sees. So Hannah
+     Boren's SOG chart left `master` and still landed on "Stopped referring - no reason
+     yet", reading as a referrer who quit. She had not quit; she came to work here.
+     The key is the PERSON IN THAT TOWN, not the NPI: 1831960574 is on her SOG chart AND
+     on her real Mantachie record, so keying on the NPI would delete 43 genuine referrals.
+     personKey ignores word order, so "Boren, Hannah" from the export and "Hannah Boren"
+     from the backup key the same. The residual risk is a genuine outside referrer who
+     shares a name with one of ours IN THE SAME TOWN; that is rarer than the bug it
+     fixes, and the export remains the authority for every referral figure. */
+  const ownWho={};
+  const groups={};
+  data.forEach(r=>{
+    const nm=(r[col.name]||'').toString().trim(); if(!nm)return;
+    if(junkName(nm)){ dropJunk++; return; }
+    if(isOurs(r)){ dropOwn++; ownWho[whoKey(nm,col.city?r[col.city]:'')]=1; return; }
+    const city=fixCity(col.city?r[col.city]:'');
+    (groups[nm+'||'+city]=groups[nm+'||'+city]||[]).push(r);
+  });
+  const byId={}, byCity={}; let total=0, seen={};
+  Object.keys(groups).forEach(k=>{
+    const rows=groups[k]; const top=rows[0];
+    const nm=(top[col.name]||'').toString().trim(); const city=fixCity(col.city?top[col.city]:'');
+    let count=0; rows.forEach(r=>count+=(+r[col.cnt]||0));
+    let typ=''; if(col.suf){for(const r of rows){const c=credNorm(r[col.suf]);if(c){typ=c;break;}}}
+    let addr1='',zip='',state='',suite=''; for(const r of rows){ if(!addr1 && col.addr && (r[col.addr]||'').toString().trim()) addr1=(r[col.addr]||'').toString().trim(); if(!zip && col.zip && (r[col.zip]||'').toString().trim()) zip=(r[col.zip]||'').toString().trim(); if(!state && col.state && (r[col.state]||'').toString().trim()) state=(r[col.state]||'').toString().trim().toUpperCase(); if(!suite && col.suite && (r[col.suite]||'').toString().trim()) suite=(r[col.suite]||'').toString().trim(); }
+    let base=(idName(nm)+'__'+jslug(city))||'p', id=base, i=2; while(seen[id]){id=base+'_'+(i++);} seen[id]=1;
+    /* The DONOTUSE marker comes off the DISPLAYED name. The id above is still built from
+       the raw text, so it keeps matching a liaison backup's visited ids. */
+    let npi=''; if(col.npi){ for(const r of rows){ const v=String(r[col.npi]||'').replace(/\D/g,'');
+      if(v.length===10 && !/^0+$/.test(v)){ npi=v; break; } } }
+    const prov={id,name:fmtName(showName(nm)),city,count,type:typ,addr1,suite,zip,state,npi};
+    byId[id]=prov; (byCity[city]=byCity[city]||[]).push(prov); total++;
+  });
+  /* COMBINE RECORDS THAT SHARE AN NPI. One physician with two charts in ModMed appears
+     here as two providers, and the damage lands hardest on the year-over-year section:
+     if intake picked the other chart more often this year, the record on this page falls
+     off a cliff and reads as a lost account. Hannah Boren showed 272 -> 100, a -172 that
+     never happened - her other chart absorbed it.
+     An NPI is the one identifier a physician actually owns, so combining on it is safe
+     here in a way it is not in the liaison's app: this page is read-only over one file,
+     with nothing to double-count at the next import. The surviving record is the one
+     with the most volume, so the name and address shown are the ones intake uses most. */
+  const byNpi={};
+  Object.values(byId).forEach(p=>{ if(p.npi) (byNpi[p.npi]=byNpi[p.npi]||[]).push(p); });
+  let combined=0;
+  Object.keys(byNpi).forEach(n=>{
+    const g=byNpi[n]; if(g.length<2) return;
+    g.sort((a,b)=>b.count-a.count);
+    const keep=g[0];
+    g.slice(1).forEach(dead=>{
+      keep.count+=dead.count;
+      delete byId[dead.id];
+      const arr=byCity[dead.city]; if(arr){ const i=arr.indexOf(dead); if(i>=0) arr.splice(i,1); }
+      total--; combined++;
+    });
+    keep.merged=g.length;      /* so a reader can see this row is two charts added together */
+  });
+  return {byId,byCity,total,list:Object.values(byId),dropOwn,dropJunk,combined,
+          ownWho:Object.keys(ownWho)};
+}
+
+// ---------- clinic rollup: group providers by normalized Address Line 1 + Zip ----------
+// Address normalizer — kept IDENTICAL to the app's clinicKey normalizer (same ABBR
+// table, same logic) so an office groups the same way here as it does in a liaison's
+// app. If you change one, change both.
+function normAddr(s){
+  let t=(s||'').toLowerCase().replace(/[.,#]/g,' ').replace(/\s+/g,' ').trim();
+  return t.split(' ').map(w=>ABBR[w]||w).join(' ').trim();
+}
+function normSuite(s){
+  /* A MISSPELLED LABEL MUST NOT MAKE A NEW OFFICE. "Sutie 107" sat beside "Suite 107" at
+     81 Ed Perry Blvd and the two became separate practices, so the clinic name Worth
+     typed on one never reached the others. The known words were already stripped, which
+     only helps while the word is spelled right.
+     Keeping ONLY the digits would fix that and break more than it fixed - Worth's own
+     data holds "Suite 100A", "SUITE D-1" and "4TH FLOOR EAST TOWER", and reducing those
+     to 100, 1 and 4 would merge suites that are genuinely different. So the label word
+     is matched loosely and everything after it is kept exactly: a token whose letters
+     are an anagram of "suite" is the word suite, however it was typed. */
+  const t=(s||'').toString().toLowerCase();
+  const sorted=x=>x.split('').sort().join('');
+  const SUITE=sorted('suite');
+  return t.split(/[^a-z0-9]+/).filter(Boolean)
+    .filter(x=>!/^(suite|ste|unit|apt|apartment|building|bldg|fl|floor|room|rm|no|number)$/.test(x))
+    .filter(x=>!(x.length===5 && /^[a-z]+$/.test(x) && sorted(x)===SUITE))
+    .join('');
+}
+
+function buildClinics(mstr){
+  const map={};
+  mstr.list.forEach(p=>{
+    // Clinic key IDENTICAL to the app's clinicKey: street :: city :: state, and a
+    // provider with no street stays standalone (same as the app). This guarantees an
+    // office rolls up here the same way it groups in a liaison's app.
+    const st=normAddr(p.addr1), cy=normAddr(p.city), stt=(p.state||'MS').toLowerCase(), su=normSuite(p.suite);
+    const k = st ? (st+'::'+cy+'::'+stt+'::'+su) : ('noaddr::'+p.id);
+    if(!map[k]) map[k]={key:k,addr1:p.addr1||'Address not listed',city:p.city,zip:p.zip,providers:[],count:0};
+    map[k].providers.push(p); map[k].count+=p.count;
+  });
+  // headline provider first, so the clinic label leads with its biggest name
+  return Object.values(map).map(c=>{ c.providers.sort((a,b)=>b.count-a.count); return c; });
+}
+
+// ---------- file handlers ----------
+document.getElementById('masterfile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const st=document.getElementById('masterStatus'); st.textContent='Reading '+f.name+'…';
+  const r=new FileReader();
+  r.onload=ev=>{ try{ master=parseMaster(ev.target.result); masterName=f.name; masterMK=fileMonthKey(f.name); st.innerHTML='<b>'+master.total+'</b> providers across <b>'+Object.keys(master.byCity).length+'</b> cities &middot; loaded: <b>'+esc(f.name)+'</b>'; refreshGen(); checkSwap(); mgrSave(); }
+    catch(err){ st.textContent='Could not read that file — make sure it\u2019s the ModMed provider export (Excel).'; } };
+  r.readAsArrayBuffer(f); e.target.value='';
+});
+document.getElementById('priorfile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const st=document.getElementById('priorStatus'); st.textContent='Reading '+f.name+'…';
+  const r=new FileReader();
+  r.onload=ev=>{ try{ priorMaster=parseMaster(ev.target.result); priorName=f.name; priorMK=fileMonthKey(f.name); st.innerHTML='Previous month: <b>'+priorMaster.total+'</b> providers &middot; loaded: <b>'+esc(f.name)+'</b>'; checkSwap(); mgrSave(); }
+    catch(err){ priorMaster=null; priorMK=null; priorName=''; checkSwap(); st.textContent='Could not read that file — make sure it\u2019s the same referral export from an earlier date.'; } };
+  r.readAsArrayBuffer(f); e.target.value='';
+});
+// ---- encrypted-backup support: decryption kept identical to the app's crypto ----
+function _unb64(s){const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+async function _deriveKey(pass,salt){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function rrDecrypt(env,pass){
+  const key=await _deriveKey(pass,_unb64(env.salt));
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:_unb64(env.iv)},key,_unb64(env.ct));
+  return new TextDecoder().decode(pt);
+}
+/* A real input, not prompt(). iOS Safari's prompt() box AUTO-CAPITALIZES the first
+   letter and runs autocorrect, so a passphrase typed correctly arrives wrong and the
+   file looks damaged. The app's own passphrase field has both switched off; this one
+   has to match it or encrypted backups cannot be opened at all. */
+function askPass(fname){return new Promise(res=>{
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:99999;padding:24px;';
+  const c=document.createElement('div');
+  c.style.cssText='background:#fff;border-radius:16px;padding:20px;max-width:340px;width:100%;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.3);font-family:inherit;';
+  c.innerHTML='<div style="font-weight:700;font-size:17px;margin-bottom:8px;color:#1d2b2a;">This backup is encrypted</div>'+
+              '<div style="font-size:13.5px;color:#5f6f6d;line-height:1.45;margin-bottom:14px;">Enter the passphrase used when '+esc(fname)+' was saved. Capital letters matter.</div>';
+  const inp=document.createElement('input');
+  inp.type='password'; inp.spellcheck=false;
+  // set as ATTRIBUTES - Safari honours the attribute, not just the property
+  inp.setAttribute('autocapitalize','off'); inp.setAttribute('autocorrect','off');
+  inp.setAttribute('autocomplete','off'); inp.setAttribute('spellcheck','false');
+  inp.style.cssText='width:100%;box-sizing:border-box;padding:12px;border:1.5px solid #e4e0d6;border-radius:10px;font-size:16px;margin-bottom:14px;';
+  c.appendChild(inp);
+  const row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;';
+  const done=v=>{ try{document.body.removeChild(ov);}catch(e){} res(v); };
+  const mk=(t,bg,fg,f)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='flex:1;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;background:'+bg+';color:'+fg+';';b.onclick=f;return b;};
+  row.appendChild(mk('Open backup','#124e52','#fff',()=>done(inp.value||'')));
+  row.appendChild(mk('Cancel','#eef1ea','#333',()=>done(null)));
+  c.appendChild(row);
+  inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter') done(inp.value||''); });
+  ov.appendChild(c); document.body.appendChild(ov); setTimeout(()=>inp.focus(),60);
+});}
+/* Files saved before the fix above were locked with what the phone's keyboard actually
+   sent - which may carry a capitalized first letter or a trailing space the typist never
+   saw. Try the obvious variants before declaring the file unreadable. */
+async function tryDecrypt(env,pass){
+  const seen=new Set(), tries=[];
+  const add=v=>{ if(typeof v==='string' && !seen.has(v)){ seen.add(v); tries.push(v); } };
+  add(pass);
+  add(pass.trim());
+  const t=pass.trim();
+  if(t){ add(t.charAt(0).toLowerCase()+t.slice(1)); add(t.charAt(0).toUpperCase()+t.slice(1)); add(t.toLowerCase()); }
+  for(const p of tries){
+    try{ return await rrDecrypt(env,p); }catch(err){}
+  }
+  return null;
+}
+document.getElementById('backupfile').addEventListener('change',e=>{
+  [...e.target.files].forEach(f=>{
+    const r=new FileReader();
+    r.onload=async ev=>{
+      try{ let d=JSON.parse(ev.target.result);
+        if(d && d.app==='ReferralRounds' && d.enc){            // encrypted backup — decrypt first
+          const pass=await askPass(f.name);
+          if(pass===null) return;                              // user cancelled — skip quietly
+          const txt=await tryDecrypt(d,pass);
+          if(txt===null){ alert('That passphrase did not open '+f.name+'. It is case-sensitive — check capital letters, and that it is the passphrase used on THIS file. The file was skipped.'); return; }
+          d=JSON.parse(txt);
+        }
+        if(d.app!=='ReferralRounds'||!d.visited) throw 0;
+        const fromFile=(d.liaisonName||'').trim();
+        const fromName=f.name.replace(/\.json$/i,'')
+                             .replace(/-?encrypted$/i,'')          // drop trailing "-encrypted"
+                             .replace(/^.*?Backup-?/i,'')          // drop any prefix up to "Backup"
+                             .replace(/\d{4}-\d{2}-\d{2}.*$/,'')   // drop the trailing date
+                             .replace(/[-_]+/g,' ').trim();
+        const label=fromFile||fromName||('Liaison '+(backups.length+1));
+        /* monthly MUST be carried: "The territory" section rebuilds the practice's own
+   time series from these buckets. It was omitted here until 2026-08-22, so that
+   whole section silently showed its "needs six months" empty state for everyone,
+   forever, even with seven months sitting in the file. */
+        /* `visits` MUST be carried, for the same reason the note above gives for `monthly`.
+           `visited` holds ONE timestamp per provider - the latest - so without the full
+           list a doctor seen three times in a month counted once, and a September visit
+           vanished entirely if the same doctor was seen again in October. That is why the
+           report could show 25 visits against 56 notes: notes were counted individually
+           all along. Omitted here until 2026-10-12. */
+        const rec={id:Date.now()+Math.random(),label,visited:d.visited||{},visits:d.visits||{},notes:d.notes||{},staff:d.staff||{},prospects:d.prospects||[],gifts:d.gifts||{},lunches:d.lunches||{},retired:d.retired||{},retiredWhy:d.retiredWhy||{},monthly:d.monthly||{},monthlyNew:d.monthlyNew||{},typedMonths:d.typedMonths||[],saved:+d.saved||0,providers:(d.providers||[]).map(p=>({id:p.id,name:p.name,city:p.city,type:p.type}))};
+        /* SAME LIAISON, NEWER FILE. Since the report started remembering its files, the
+           ordinary monthly path is "drop in a fresh backup" - and a blind push left TWO
+           entries for one person. The territory survives that (providers merge by id) but
+           the activity tiles sum across entries, so visits and notes double. Match on the
+           label and replace in place, keeping the entry's position in the list. */
+        const dupe=backups.findIndex(x=>(x.label||'').trim().toLowerCase()===label.trim().toLowerCase());
+        if(dupe>=0){
+          const old=backups[dupe];
+          const when=old.saved?new Date(old.saved).toLocaleDateString(undefined,{month:'short',day:'numeric'}):null;
+          const msg=esc(label)+' is already loaded'+(when?' (backed up '+when+')':'')+'.\n\nReplace it with this file?\n\nOK replaces it. Cancel adds this as a second liaison, which counts their visits twice.';
+          if(confirm(msg)){ rec.id=old.id; backups[dupe]=rec; }
+          else backups.push(rec);
+        } else backups.push(rec);
+        renderFileList(); refreshGen(); mgrSave();
+      }catch(err){ alert(f.name+' isn\u2019t a Referral Rounds backup — skipped.'); }
+    };
+    r.readAsText(f);
+  });
+  e.target.value='';
+});
+function renderFileList(){
+  const el=document.getElementById('fileList');
+  const dstamp=t=>t?new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
+  el.innerHTML=backups.map(b=>`<div class="fileitem">
+    <input type="text" value="${b.label.replace(/"/g,'&quot;')}" oninput="renameBackup('${b.id}',this.value)">
+    <button class="rm" onclick="removeBackup('${b.id}')">\u00d7</button></div>${b.saved?`<div class="hint" style="margin:-6px 0 8px 2px">backed up ${esc(dstamp(b.saved))}</div>`:''}`).join('');
+}
+function renameBackup(id,v){const b=backups.find(x=>x.id==id); if(b){b.label=v; mgrSaveSoon();}}
+function removeBackup(id){backups=backups.filter(x=>x.id!=id); renderFileList(); refreshGen(); mgrSave();}
+function refreshGen(){document.getElementById('genBtn').disabled=!(master&&backups.length);}
+
+// ---------- remember the loaded setup on this phone ----------
+// The report runs in Safari on the SAME ORIGIN as the app, so every key here is
+// namespaced rrmgr: to stay well clear of the app's own storage box. Nothing leaves
+// the device — this is the same kind of local box the app uses, not a server.
+const MGRKEY='rrmgr:setup';
+let _saveT=null;
+function _v(id){const e=document.getElementById(id);return e?e.value:'';}
+function _sv(id,v){const e=document.getElementById(id);if(e&&v!=null&&v!=='')e.value=v;}
+// Only the provider LIST is stored; byId/byCity are indexes and get rebuilt on load,
+// which roughly halves what we ask the phone to hold.
+function packMaster(m){ return m?{list:m.list}:null; }
+function unpackMaster(o){
+  if(!o||!Array.isArray(o.list))return null;
+  const byId={},byCity={};
+  o.list.forEach(p=>{ byId[p.id]=p; (byCity[p.city]=byCity[p.city]||[]).push(p); });
+  return {byId,byCity,list:o.list,total:o.list.length};
+}
+function mgrSaveSoon(){ clearTimeout(_saveT); _saveT=setTimeout(mgrSave,500); }
+function mgrSave(){
+  try{
+    if(!master && !backups.length){ localStorage.removeItem(MGRKEY); updateSavedBar(); return; }
+    localStorage.setItem(MGRKEY, JSON.stringify({v:1,saved:Date.now(),
+      master:packMaster(master), masterName, masterMK,
+      prior:packMaster(priorMaster), priorName, priorMK,
+      backups,
+      set:{prac:_v('pracName'),cov:_v('covMin'),per:_v('period'),cs:_v('customStart'),ce:_v('customEnd')}}));
+  }catch(err){
+    // Out of room, or private browsing. The report still works perfectly — it just
+    // will not remember. Say so plainly instead of failing silently.
+    try{ localStorage.removeItem(MGRKEY); }catch(e){}
+    const b=document.getElementById('savedBar');
+    if(b){ b.style.display='block';
+      b.style.background='#fff4e5'; b.style.borderColor='#f0c37a'; b.style.color='#7a4a00';
+      b.innerHTML='This phone wouldn\u2019t hold that much \u2014 everything still works, but you\u2019ll need to load the files again next time.'; }
+    return;
+  }
+  updateSavedBar();
+}
+function updateSavedBar(){
+  const b=document.getElementById('savedBar'); if(!b)return;
+  let s=null; try{ s=JSON.parse(localStorage.getItem(MGRKEY)||'null'); }catch(e){ s=null; }
+  if(!s||!s.saved){ b.style.display='none'; return; }
+  const d=new Date(s.saved);
+  const when=d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' at '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+  b.style.background='#eef6ef'; b.style.borderColor='#c7e0cb'; b.style.color='#2c5233';
+  b.innerHTML='<b>Your files are still loaded</b> \u2014 saved on this phone '+esc(when)+'. Change what you need and hit Generate, or load a newer file straight over the top of it. '+
+    '<button class="btn" style="margin-top:9px;padding:7px 12px;font-size:13px" onclick="mgrForget()">Clear saved files</button>';
+}
+function mgrForget(){
+  try{ localStorage.removeItem(MGRKEY); }catch(e){}
+  master=null; priorMaster=null; backups=[]; masterName=''; priorName=''; masterMK=null; priorMK=null;
+  document.getElementById('masterStatus').textContent='No referral download loaded yet.';
+  document.getElementById('priorStatus').textContent='No previous-month download loaded.';
+  const r=document.getElementById('report'); r.innerHTML=''; r.style.display='none';
+  document.getElementById('printBtn').style.display='none';
+  renderFileList(); refreshGen(); checkSwap(); updateSavedBar();
+}
+function mgrRestore(){
+  let s=null; try{ s=JSON.parse(localStorage.getItem(MGRKEY)||'null'); }catch(e){ s=null; }
+  if(!s||!s.v){ updateSavedBar(); return; }
+  master=unpackMaster(s.master); masterName=s.masterName||''; masterMK=(s.masterMK==null?null:s.masterMK);
+  priorMaster=unpackMaster(s.prior); priorName=s.priorName||''; priorMK=(s.priorMK==null?null:s.priorMK);
+  backups=Array.isArray(s.backups)?s.backups:[];
+  if(s.set){ _sv('pracName',s.set.prac); _sv('covMin',s.set.cov); _sv('period',s.set.per); _sv('customStart',s.set.cs); _sv('customEnd',s.set.ce); onPeriodChange(); }
+  if(master) document.getElementById('masterStatus').innerHTML='<b>'+master.total+'</b> providers across <b>'+Object.keys(master.byCity).length+'</b> cities &middot; loaded: <b>'+esc(masterName)+'</b>';
+  if(priorMaster) document.getElementById('priorStatus').innerHTML='Previous month: <b>'+priorMaster.total+'</b> providers &middot; loaded: <b>'+esc(priorName)+'</b>';
+  renderFileList(); refreshGen(); checkSwap(); updateSavedBar();
+}
+
+// ---------- aggregation + report ----------
+function onPeriodChange(){ const c=document.getElementById('customRange'); if(c) c.style.display=(document.getElementById('period').value==='custom')?'block':'none'; }
+// Activity window as {start,end}. end is a real upper bound so "Last month" and a
+// custom range don't bleed into today. Coverage stays all-time elsewhere; this only
+// bounds the per-liaison activity counts.
+function rangeBounds(p){
+  const now=new Date(), end0=now.getTime();
+  if(p==='all') return {start:0, end:end0};
+  if(p==='lastmonth'){ const s=new Date(now.getFullYear(),now.getMonth()-1,1,0,0,0,0); const e=new Date(now.getFullYear(),now.getMonth(),1,0,0,0,0).getTime()-1; return {start:s.getTime(), end:e}; }
+  if(p==='year'){ return {start:new Date(now.getFullYear(),0,1,0,0,0,0).getTime(), end:end0}; }
+  if(p==='custom'){
+    let s=0, e=end0;
+    const sv=(document.getElementById('customStart')||{}).value, ev=(document.getElementById('customEnd')||{}).value;
+    if(sv){ const d=new Date(sv+'T00:00:00'); if(!isNaN(d)) s=d.getTime(); }
+    if(ev){ const d=new Date(ev+'T23:59:59.999'); if(!isNaN(d)) e=d.getTime(); }
+    if(s>e){ const t=s; s=e; e=t; }
+    return {start:s, end:e};
+  }
+  const d=new Date(); d.setHours(0,0,0,0);
+  if(p==='week'){ const dow=(d.getDay()+6)%7; d.setDate(d.getDate()-dow); }
+  else if(p==='month'){ d.setDate(1); }
+  return {start:d.getTime(), end:end0};
+}
+function periodLabel(p){
+  if(p==='all')return 'All time';
+  const b=rangeBounds(p), f=ts=>new Date(ts).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+  return f(b.start)+' \u2013 '+f(b.end);
+}
+function esc(s){return (s||'').toString().replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function generate(){
+  const period=document.getElementById('period').value;
+  const _b=rangeBounds(period), inR=ts=>ts>=_b.start&&ts<=_b.end;
+  const prac=document.getElementById('pracName').value.trim()||'Your Practice';
+  // Coverage is measured against providers worth scheduling, not every name in the
+  // export. Without this, hundreds of one-referral physicians sit in the denominator
+  // and the percentage can never approach 100 however well the team performs.
+  const covMin=Math.max(1, +document.getElementById('covMin').value||1);
+  // Retired providers (marked in a liaison's app, carried in the backup's `retired`)
+  // are no longer scheduleable, so they come OUT of coverage everywhere — the same way
+  // the app hides them from the route. Their historical volume still appears in the
+  // leaderboards below; retirement is forward-looking only. Older backups without a
+  // `retired` key contribute nothing here, so nothing changes for them.
+  const retiredIds=new Set();
+  backups.forEach(b=>Object.keys(b.retired||{}).forEach(id=>retiredIds.add(id)));
+  /* WHY THEY CAME OFF THE ROUTE. The app asks when a provider is removed - retired,
+     moved practice, no longer sees ortho, left the area - and carries the answer in
+     the backup. The report used to drop it, which made the "stopped referring" list
+     read as a liaison's failure: a provider who retired in May and one who quietly
+     drifted away looked identical, and the explained cases simply vanished rather
+     than counting as work done. The reason is a fact from the field that no download
+     contains, so it is the only thing that can tell those two apart. */
+  const whyById={};
+  backups.forEach(b=>Object.entries(b.retiredWhy||{}).forEach(([id,r])=>{
+    if(r && !whyById[id]) whyById[id]=String(r);
+  }));
+  const covList=master.list.filter(p=>p.count>=covMin && !retiredIds.has(p.id));
+  const covIds=new Set(covList.map(p=>p.id));
+
+  // All-time coverage. A provider counts as reached if anyone marked them visited
+  // OR logged a dated note on them. Notes matter because "Reset this city" clears
+  // visit marks to start a fresh pass, but never touches notes - so counting notes
+  // keeps coverage history intact through a reset.
+  /* NAMES FOR PROVIDERS NOT IN THIS MONTH'S DOWNLOAD. Anyone who stopped referring is
+     absent from a current CRM file, so master.byId cannot name them - and the stopped
+     list printed raw ids like "baldwinnathan__booneville__100hospitalsts". The backups
+     carry the roster each liaison held, which is where those records live. */
+  /* OUR OWN CHARTS, IN THE BACKUP, 10.21a. The import filter keeps them out of `master`
+     but the backup carries them regardless - and the book, the year-over-year figures,
+     the stopped lists and the movers are all built from the backup. Hannah Boren's SOG
+     chart sent 40-odd last year and nothing this year, because she came to work here,
+     and it sat on "Stopped referring - no reason yet" as a referrer to go chase.
+     Resolved by PERSON AND TOWN (see whoKey in parseMaster): an id whose backup record
+     names one of our own people in one of our own towns is ours, whatever its NPI says.
+     Learned from BOTH files, so a chart that only appears in the prior period is caught
+     as well. */
+  const ownWho=new Set();
+  [master,priorMaster].forEach(m=>{ if(m&&m.ownWho) m.ownWho.forEach(k=>ownWho.add(k)); });
+  const ownIds=new Set();
+  if(ownWho.size) backups.forEach(b=>(b.providers||[]).forEach(p=>{
+    if(!p||!p.id) return;
+    const k=whoKey(p.name,p.city);
+    if(k && ownWho.has(k)) ownIds.add(p.id);
+  }));
+  /* AND ANYONE THE LIAISON HAS MARKED AS ONE OF OURS BY HAND, 10.21c. No rule built on
+     the export can catch Hannah Boren's record at the clinic she left in 2019: it carries
+     that clinic's real address and real phone, because that is genuinely where she used
+     to work. The 43 patients on it this year are her old patients returning to us, which
+     ModMed attributes to the referring provider on their chart. The liaison is the only
+     one who knows, so the app offers "Works for us" as a reason, and a record carrying it
+     is treated exactly like a chart at our own front door - dropped, not reported as an
+     account that walked. Must stay in step with OWN_REASON in index.html. */
+  const OWN_REASON=/^works for us$/i;
+  Object.entries(whyById).forEach(([id,why])=>{ if(OWN_REASON.test(String(why).trim())) ownIds.add(id); });
+  const isOwnId=id=>ownIds.has(id);
+  const rosterById={};
+  backups.forEach(b=>{ (b.providers||[]).forEach(p=>{
+    if(p&&p.id&&!isOwnId(p.id)&&!rosterById[p.id]) rosterById[p.id]=p; }); });
+  const provInfo=id=>master.byId[id]||rosterById[id]||{};
+
+  const everVisited=new Set();
+  backups.forEach(b=>{
+    Object.keys(b.visited||{}).forEach(id=>{ if(master.byId[id]) everVisited.add(id); });
+    // A CALL IT IN marker (kind:'vm') on its own does NOT reach a provider — it
+    // takes a visit or a real written note. In practice a voicemail always rides with the
+    // same-day visit that already gives coverage credit, so no existing numbers move.
+    Object.entries(b.notes||{}).forEach(([id,arr])=>{ if(master.byId[id] && (arr||[]).some(n=>n.kind!=='vm')) everVisited.add(id); });
+  });
+
+  // period activity per liaison. A visit to a prospect counts too - they are not
+  // in the practice export yet, but courting a new referrer is real work.
+  const perLiaison=backups.map(b=>{
+    let visits=0, notes=0, vms=0, pros=0; const cities=new Set();
+    const pById={}; (b.prospects||[]).forEach(x=>{ pById[x.id]=x; });
+    /* WHAT COUNTS AS A VISIT, settled with Worth 2026-10-12.
+       A note on a provider now counts as a visit: he writes notes standing in the office
+       and does not always tap Mark visited, so counting only the check-offs described his
+       record-keeping rather than his week - 24 for the whole of September.
+       BUCKETED BY DAY, which is what keeps it honest. One visit per provider per day
+       however many notes were written on them, so three notes on one doctor on a Tuesday
+       is one visit to that doctor, not three. Marking visited and noting the same person
+       on the same day is still one.
+       Voicemails are left out - they have their own tile, and a message is not a visit.
+       `visited` holds only the LATEST timestamp per provider, so the full `visits` list is
+       used where present; without it a doctor seen three times counted once, and a
+       September visit vanished if the same doctor was seen again in October. */
+    const vlist=(b.visits && typeof b.visits==='object') ? b.visits : null;
+    const dayOf=ts=>{ const d=new Date(ts); d.setHours(0,0,0,0); return d.getTime(); };
+    const days={};
+    const touch=(id,ts)=>{ if(!ts||!inR(ts))return; (days[id]=days[id]||{})[dayOf(ts)]=1; };
+    const ids={};
+    Object.keys(b.visited||{}).forEach(id=>ids[id]=1);
+    if(vlist) Object.keys(vlist).forEach(id=>ids[id]=1);
+    Object.keys(b.notes||{}).forEach(id=>ids[id]=1);
+    /* WHICH VISITS COUNT. This guard used to require that a provider appear in the CRM
+       file sitting in the top slot, and threw the visit away otherwise - so a call was
+       only credited if that doctor happened to refer during the period the download
+       covers. Load a September-only file instead of a year-to-date one and the visit
+       count falls, though every one of those calls was still made. Worth caught it at
+       70 dropping to 57.
+       A visit is a fact about the liaison's day, not about the referral file, so the
+       backup's OWN roster settles whether the id is a real provider - the same roster
+       that names people on the stopped list. An id in none of the three is genuinely
+       orphaned (a deleted record) and is still skipped. */
+    Object.keys(ids).forEach(id=>{
+      const inMaster=!!master.byId[id], isPros=!inMaster && !!pById[id];
+      const onRoster=!inMaster && !isPros && !!rosterById[id];
+      if(!inMaster && !isPros && !onRoster) return;
+      let stamps=(vlist && Array.isArray(vlist[id]) && vlist[id].length) ? vlist[id] : [];
+      if(!stamps.length && b.visited && b.visited[id]) stamps=[b.visited[id]];
+      stamps.forEach(ts=>touch(id,ts));
+      ((b.notes||{})[id]||[]).forEach(n=>{ if(n && n.kind!=='vm') touch(id,n.ts); });
+    });
+    Object.keys(days).forEach(id=>{
+      const n=Object.keys(days[id]).length; if(!n) return;
+      visits+=n;
+      const inMaster=!!master.byId[id];
+      if(!inMaster && pById[id]) pros+=n;
+      /* City falls back to the roster too, or a town worked all month shows as unvisited
+         purely because its doctors sent nothing in the file that happens to be loaded. */
+      const city=inMaster ? master.byId[id].city
+                          : ((pById[id]||{}).city || (rosterById[id]||{}).city);
+      if(city) cities.add(city);
+    });
+    Object.entries(b.notes).forEach(([id,arr])=>{
+      // same population the visit count uses, roster included - see the note above
+      if(!master.byId[id] && !pById[id] && !rosterById[id])return;
+      (arr||[]).forEach(n=>{ if(inR(n.ts)){ if(n.kind==='vm') vms++; else notes++; } });   // Notes = written call logs only
+    });
+    /* OFFICE STAFF COUNT TOO. Staff live in their own store keyed by address, not by
+       provider, so both loops above missed them entirely - a liaison could spend a
+       morning with referral coordinators and the report would show nothing. Deliberately
+       folded into the SAME tiles rather than given their own: at many offices the
+       coordinator is the relationship, and splitting the numbers would invite reading
+       physician contact as the real work and staff contact as the lesser version.
+       The call log shows who each note was under if anyone wants the detail. */
+    /* Office staff, counted the same way: one visit per staff member per day, whether it
+       came from a "seen" mark or a note written on them. Folded into the same tiles as the
+       physicians on purpose - at many offices the coordinator IS the relationship. */
+    Object.entries(b.staff||{}).forEach(([k,arr])=>{
+      (arr||[]).forEach(sm=>{
+        const sdays={};
+        if(sm.seen && inR(sm.seen)) sdays[dayOf(sm.seen)]=1;
+        (sm.notes||[]).forEach(n=>{ if(inR(n.ts)){ sdays[dayOf(n.ts)]=1; notes++; } });
+        visits+=Object.keys(sdays).length;
+      });
+    });
+    return {label:b.label,visits,notes,vms,pros,cities:cities.size,prospects:(b.prospects||[]).length};
+  }).sort((a,b)=>b.visits-a.visits);
+
+  const totVisits=perLiaison.reduce((s,x)=>s+x.visits,0);
+  const totPros=perLiaison.reduce((s,x)=>s+x.pros,0);
+  const totPipeline=perLiaison.reduce((s,x)=>s+x.prospects,0);
+  const totNotes=perLiaison.reduce((s,x)=>s+x.notes,0);
+  const totVms=perLiaison.reduce((s,x)=>s+x.vms,0);
+  const anyVm=totVms>0;
+  const covered=[...everVisited].filter(id=>covIds.has(id)).length, total=covList.length;
+  const covPct=total?Math.round(covered/total*100):0;
+
+  // coverage gaps: master providers nobody has ever visited, by volume
+  const gaps=covList.filter(p=>!everVisited.has(p.id)).sort((a,b)=>b.count-a.count);
+
+  // clinic rollup: providers at the same address become one clinic. One visit to
+  // anyone there reaches the whole office, and the referral threshold gates on the
+  // clinic's COMBINED volume — so five one-referral docs at a busy office no longer
+  // show up as five separate gaps.
+  const clinics=buildClinics(master).map(c=>{
+    const providers=c.providers.filter(p=>!retiredIds.has(p.id));
+    return Object.assign({},c,{providers,count:providers.reduce((s,p)=>s+p.count,0)});
+  }).filter(c=>c.providers.length);
+  const staffKeys=new Set();
+  backups.forEach(b=>{ Object.entries(b.staff||{}).forEach(([k,arr])=>{ if((arr||[]).some(s=>s.seen||(s.notes&&s.notes.length)||s.note)) staffKeys.add(k); }); });
+  clinics.forEach(c=>{ c.reached=c.providers.some(p=>everVisited.has(p.id)) || staffKeys.has(c.key); });
+  const covClinics=clinics.filter(c=>c.count>=covMin);
+  const clinicGaps=covClinics.filter(c=>!c.reached).sort((a,b)=>b.count-a.count);
+  const clinicsCovered=covClinics.filter(c=>c.reached).length;
+  const clinicCovPct=covClinics.length?Math.round(clinicsCovered/covClinics.length*100):0;
+  const topClinicGaps=clinicGaps.slice(0,20);
+
+  // leaderboards. Top referrers come straight off the current report. Gainers and
+  // decliners need the optional prior report; we rank by ABSOLUTE change in referral
+  // count, never percentage, so a 1->3 provider never outranks a real account bleeding 20.
+  // Retired providers are left out of BOTH leaderboards, the same way they are left
+  // out of coverage, the clinic rollup, the city table and the territory grading.
+  // A retired doctor at the top of "Top referrers" reads as someone to go protect,
+  // and his volume falling off reads as slipping — both send a liaison after a name
+  // that is already gone. Their historical referrals still sit in the CRM file; they
+  // just stop appearing as live accounts.
+  const liveList=master.list.filter(p=>!retiredIds.has(p.id));
+  const retiredShown=master.list.length-liveList.length;
+  const topVol=liveList.slice().sort((a,b)=>b.count-a.count).slice(0,15);
+  let gainers=[], decliners=[], gsRematched=0;
+  if(priorMaster){
+    /* MATCHING A PHYSICIAN ACROSS THE TWO FILES. A record id carries the address, and
+       parseMaster combines same-NPI records keeping whichever had the most volume IN
+       THAT FILE - so the surviving id can differ between the two downloads. A doctor
+       whose old chart was bigger last period and whose new chart is bigger now gets one
+       id in each file, and matching on id alone then misses in both directions: she
+       reads as a first-time referrer AND as a total loss, landing in the gaining and the
+       slipping column at once, with both deltas wrong. Worth caught it on Flavia West.
+       The NPI is the one identifier a physician owns and both files carry it, so it is
+       tried before the id. A name is the last resort and only when NEITHER side has a
+       real NPI - two different physicians genuinely share a name in this territory (two
+       David Lees, two Hannah Pittmans), and a name match would silently add them up. */
+    const okNpi=v=>{ const s=String(v||'').replace(/\D/g,''); return (s.length===10&&!/^0+$/.test(s))?s:''; };
+    const priorByNpi={}, priorByName={};
+    priorMaster.list.forEach(p=>{
+      const n=okNpi(p.npi);
+      if(n){ if(!priorByNpi[n]||p.count>priorByNpi[n].count) priorByNpi[n]=p; }
+      else { const k=personKey(p.name); if(k&&(!priorByName[k]||p.count>priorByName[k].count)) priorByName[k]=p; }
+    });
+    const rows=[], seenP=new Set();
+    let rematched=0;
+    liveList.forEach(p=>{
+      const n=okNpi(p.npi);
+      let pr=priorMaster.byId[p.id], how=pr?'id':'';
+      if(!pr && n && priorByNpi[n]){ pr=priorByNpi[n]; how='npi'; }
+      if(!pr && !n){ const k=personKey(p.name); if(k&&priorByName[k]){ pr=priorByName[k]; how='name'; } }
+      const prior=pr?pr.count:0;
+      seenP.add(p.id);
+      if(pr) seenP.add(pr.id);          /* so her other record cannot ALSO be a decline */
+      if(how==='npi'||how==='name') rematched++;
+      rows.push({name:p.name,type:p.type,city:p.city,cur:p.count,prior,
+                 delta:p.count-prior,isNew:!pr});
+    });
+    gsRematched=rematched;
+    priorMaster.list.forEach(p=>{ if(seenP.has(p.id)||retiredIds.has(p.id))return;   // in prior, gone from current = stopped
+      rows.push({name:p.name,type:p.type,city:p.city,cur:0,prior:p.count,delta:-p.count,dropped:true}); });
+    gainers=rows.filter(r=>r.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,12);
+    decliners=rows.filter(r=>r.delta<0).sort((a,b)=>a.delta-b.delta).slice(0,12);
+  }
+
+  // ---- THE BOOK ----
+  // The one figure in this report that is about the PRACTICE rather than about a
+  // provider or a liaison. Liaison backups carry the app's month-by-month referral
+  // buckets, so a real time series can be rebuilt here without asking anyone for
+  // extra files. Providers are keyed by id, so two liaisons carrying the same
+  // provider merge rather than double-count.
+  const bookById={};
+  backups.forEach(b=>Object.entries(b.monthly||{}).forEach(([id,mm])=>{
+    if(isOwnId(id))return;          // one of our own charts - never a referral source
+    if(retiredIds.has(id))return;   // retired providers fall to zero by definition
+    bookById[id]=Object.assign(bookById[id]||{}, mm||{});
+  }));
+  /* The same series for the providers bookById deliberately leaves out. Held apart so
+     not one number above moves: the book, the trend and the year-over-year percentages
+     are all computed from bookById and stay exactly as verified. This map exists only
+     to say what an accounted-for provider used to send, so the report can show the
+     work rather than silently swallow it. */
+  const retiredBook={};
+  backups.forEach(b=>Object.entries(b.monthly||{}).forEach(([id,mm])=>{
+    if(isOwnId(id))return;          /* ours, so not an account anybody lost */
+    if(!retiredIds.has(id))return;
+    retiredBook[id]=Object.assign(retiredBook[id]||{}, mm||{});
+  }));
+  /* NEW PATIENTS, 10.21d. The appointment-type import records a new-patient subtotal per
+     provider per month, and the backup has carried it all along - the report simply never
+     read it. It answers the question the referral total cannot: is this doctor sending us
+     NEW business, or are we seeing their old patients come back?
+     THE WINDOW IS THE WHOLE POINT. New-patient figures exist only for the months an
+     appointment-type file was imported, which may be one month while the referral total
+     on the same card is a year. Printing those two side by side would be worse than
+     printing neither. So both numbers below are summed over the SAME months - the typed
+     ones - and the heading says which. */
+  const newById={};
+  backups.forEach(b=>Object.entries(b.monthlyNew||{}).forEach(([id,mm])=>{
+    if(isOwnId(id))return;
+    if(retiredIds.has(id))return;
+    newById[id]=Object.assign(newById[id]||{}, mm||{});
+  }));
+  const typedSet=new Set();
+  backups.forEach(b=>(b.typedMonths||[]).forEach(m=>typedSet.add(String(m))));
+  /* A backup written before typedMonths existed still has the months in monthlyNew. */
+  if(!typedSet.size) Object.values(newById).forEach(mm=>Object.keys(mm).forEach(k=>typedSet.add(k)));
+  const typedMonths=[...typedSet].sort();
+  const monthTotals={};
+  Object.values(bookById).forEach(mm=>Object.entries(mm).forEach(([k,v])=>{
+    monthTotals[k]=(monthTotals[k]||0)+(+v||0);
+  }));
+  const bookKeys=Object.keys(monthTotals).sort();
+  const MONL=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mlab=k=>MONL[(+k.slice(5,7))-1]+" '"+k.slice(2,4);
+  /* BAND stays a plain percentage for the TERRITORY-level narrative below (is the
+     whole territory up or down meaningfully). Individual providers are graded with
+     ZB instead - see gradeZ. CORE_MIN splits the list: a provider doing fewer than
+     this many in the prior quarter moves on numbers too small to read, so they are
+     reported separately rather than mixed into the headline. */
+  const BLK=3, BAND=10, ZB=1.5, CORE_MIN=6;
+  /* NOISE-SCALED BAND. A fixed +/-10% treats 3 -> 1 and 60 -> 45 as the same size
+     of move; they are not. Counts carry noise of roughly sqrt(count), so this
+     measures the gap in units of that noise. Must stay identical to gradeMove()
+     in the app or the two tools disagree in front of a customer. */
+  /* Mirrors gradeMove() in the app. The app also carries a NEW_MIN branch for a
+     ZERO before-block (a first-time referrer); there is no equivalent here because
+     the loop below drops pb<=0 entirely - a provider with nothing to compare against
+     is not graded on movement. Do not "fix" that by grading them: they would all
+     land as beats and inflate the tiles. */
+  const gradeZ=(rs,bs,bookPct)=>{
+    const expected=bs*(1+bookPct/100);
+    if(!(expected>0))return 'moved';
+    const z=(rs-expected)/Math.sqrt(expected);
+    return z>=ZB?'beat':(z<=-ZB?'trailed':'moved');
+  };
+  let book=null;
+  if(bookKeys.length>=BLK*2){
+    const recentK=bookKeys.slice(-BLK), beforeK=bookKeys.slice(-BLK*2,-BLK);
+    const sum=ks=>ks.reduce((a,k)=>a+monthTotals[k],0);
+    const rs=sum(recentK), bs=sum(beforeK);
+    const pct=bs>0?Math.round(((rs-bs)/bs)*100):0;
+    // How each provider fared against that same practice-wide move.
+    let beat=0, matched=0, trailed=0, judged=0;
+    let oBeat=0, oMatched=0, oTrailed=0, oJudged=0;
+    Object.entries(bookById).forEach(([id,mm])=>{
+      const ks=Object.keys(mm).sort();
+      if(ks.length<BLK*2)return;
+      const pb=ks.slice(-BLK*2,-BLK).reduce((a,k)=>a+(+mm[k]||0),0);
+      const pr=ks.slice(-BLK).reduce((a,k)=>a+(+mm[k]||0),0);
+      if(pb<=0)return;
+      const v=gradeZ(pr,pb,pct);
+      if(pb>=CORE_MIN){
+        judged++;
+        if(v==='beat')beat++; else if(v==='trailed')trailed++; else matched++;
+      } else {
+        oJudged++;
+        if(v==='beat')oBeat++; else if(v==='trailed')oTrailed++; else oMatched++;
+      }
+    });
+    book={pct, rs, bs, judged, beat, matched, trailed, oJudged, oBeat, oMatched, oTrailed,
+          recentLabel:mlab(recentK[0])+' \u2013 '+mlab(recentK[BLK-1]),
+          beforeLabel:mlab(beforeK[0])+' \u2013 '+mlab(beforeK[BLK-1]),
+          strip:bookKeys.slice(-12).map(k=>({k, lab:mlab(k), v:monthTotals[k]}))};
+  }
+
+  /* ---------- YEAR OVER YEAR ----------
+     Answers the question a practice owner actually asks: is the referral base
+     growing? Deliberately MATCHED MONTHS - the same calendar months on both sides -
+     because comparing eight months of this year to twelve of last produces a fake
+     decline, and that is the easiest way for this section to lie. It computes only
+     when a full prior-year match exists; with one year of data it renders nothing
+     rather than a misleading zero. */
+  let yoy=null;
+  (function(){
+    if(!bookKeys.length) return;
+    const yrs=[...new Set(bookKeys.map(k=>k.slice(0,4)))].sort();
+    if(yrs.length<2) return;
+    const cur=yrs[yrs.length-1], prev=String(+cur-1);
+    /* only months present in BOTH years count, on either side */
+    const curM=bookKeys.filter(k=>k.startsWith(cur+'-')).map(k=>k.slice(5,7));
+    const prevM=bookKeys.filter(k=>k.startsWith(prev+'-')).map(k=>k.slice(5,7));
+    const months=curM.filter(m=>prevM.indexOf(m)!==-1).sort();
+    if(!months.length) return;
+    const A=months.map(m=>prev+'-'+m), B=months.map(m=>cur+'-'+m);
+    const sum=(mm,ks)=>ks.reduce((a,k)=>a+(+mm[k]||0),0);
+    let pa=0, pb=0, na=0, nb=0, kept=0, gained=0, lost=0, keptN=0, newN=0, lostN=0,
+        newReal=0, newRealN=0, newOnce=0, newOnceN=0, movedN=0, moved=0;
+    /* SAME PHYSICIAN, NEW RECORD. When a provider's address changes between the two
+       years, the export gives the old address one record and the new one another - so
+       one record dies and another is born, and the same doctor lands on BOTH the
+       stopped list and the newcomer count. It reads as a departure and a win at once,
+       when in fact nothing happened but a move. Worth caught this on Nathan Baldwin:
+       listed as stopped at 35, while a second record had him at 39 and growing.
+       Index who is genuinely referring this year BY NAME, then treat a name found in
+       that index as moved rather than lost. NPI in the export would make this exact,
+       but the name match catches the cases that matter. */
+    const nkey=t=>String(t||'').toLowerCase().replace(/[^a-z]/g,'');
+    const liveNames={};
+    Object.entries(bookById).forEach(([id,mm])=>{
+      if(B.reduce((x,k)=>x+(+mm[k]||0),0)>0){
+        const nm=nkey(provInfo(id).name);
+        if(nm) liveNames[nm]=(liveNames[nm]||0)+B.reduce((x,k)=>x+(+mm[k]||0),0);
+      }
+    });
+    const stopped=[], movers=[];
+    Object.entries(bookById).forEach(([id,mm])=>{
+      const a=sum(mm,A), b=sum(mm,B);
+      if(a<=0&&b<=0) return;
+      pa+=a; pb+=b;
+      if(a>0) na++;
+      if(b>0) nb++;
+      if(a>0&&b>0){ kept+=b-a; keptN++; movers.push({id,a,b}); }
+      else if(a<=0){
+        gained+=b;
+        if(b>=CORE_MIN){ newReal+=b; newRealN++; } else { newOnce+=b; newOnceN++; }
+        newN++;
+      }
+      else {
+        const nm=nkey(provInfo(id).name);
+        if(nm && liveNames[nm]){ movedN++; moved+=a; return; }   /* same doctor, different record */
+        lost+=a; lostN++;
+        if(a>=CORE_MIN) stopped.push({id,a});
+      }
+    });
+    /* ACCOUNTED FOR. Providers who sent real volume in the earlier period, send nothing
+       now, and whose reason the liaison has already established in the field. They are
+       not a gap in anybody's coverage - a retired doctor cannot be called on - so they
+       are reported separately, with what happened, and are not mixed into the list of
+       people still to chase. */
+    const accounted=[];
+    Object.entries(retiredBook).forEach(([id,mm])=>{
+      const a=sum(mm,A), b=sum(mm,B);
+      if(a<CORE_MIN || b>0) return;
+      /* "No referrals" is the symptom, not an explanation - printing it back as a reason
+         would be circular. But the removal is still a decision somebody made and it
+         belongs on the report, so it is relabelled as the decision it actually was
+         rather than either echoed as a cause or quietly dropped. */
+      let why=whyById[id]||'Taken off the route';
+      if(/^no referrals$/i.test(why)) why='Dropped — no volume';
+      accounted.push({id,a,why});
+    });
+    accounted.sort((x,y)=>y.a-x.a);
+    const accBy={};
+    accounted.forEach(x=>{ (accBy[x.why]=accBy[x.why]||[]).push(x); });
+    const accReasons=Object.keys(accBy).sort((x,y)=>accBy[y].length-accBy[x].length);
+    if(!pa) return;
+    const pct=(pb-pa)/pa*100;
+    /* Each physician is graded against the TERRITORY's own year-over-year move, with
+       the same noise scaling the quarterly engine uses - so a doctor who slipped less
+       than the book did is not called a decline. */
+    movers.forEach(x=>{ x.kind=gradeZ(x.b,x.a,pct); x.delta=x.b-x.a; });
+    stopped.sort((x,y)=>y.a-x.a);
+    yoy={pct, pa, pb, na, nb, kept, gained, lost, keptN, newN, lostN, stopped, movers,
+         newReal, newRealN, newOnce, newOnceN, movedN, moved, movedN,
+         accounted, accBy, accReasons,
+         accVol: accounted.reduce((s,x)=>s+x.a,0),
+         label: mlab(A[0])+' \u2013 '+mlab(A[A.length-1])+' vs '+mlab(B[0])+' \u2013 '+mlab(B[B.length-1]),
+         curLabel: mlab(B[0])+' \u2013 '+mlab(B[B.length-1]),
+         prevLabel: mlab(A[0])+' \u2013 '+mlab(A[A.length-1]),
+         months: months.length};
+  })();
+
+  // by city coverage (all-time)
+  const cityRows=Object.keys(master.byCity).map(city=>{
+    const provs=master.byCity[city].filter(p=>covIds.has(p.id));
+    if(!provs.length)return null;
+    const vis=provs.filter(p=>everVisited.has(p.id)).length;
+    return {city,vis,tot:provs.length,pct:Math.round(vis/provs.length*100)};
+  }).filter(Boolean).sort((a,b)=>a.pct-b.pct || b.tot-a.tot);
+
+  /* Gifts and meals. Reported for the CALENDAR YEAR regardless of the period above,
+     because the federal non-monetary compensation cap is measured per physician per
+     calendar year. Lunches stay attributed to the office as they were bought. */
+  const YR=new Date().getFullYear();
+  const inYr=ts=>new Date(ts).getFullYear()===YR;
+  const money=n=>'$'+(Math.round(n*100)/100).toFixed(2).replace(/\.00$/,'');
+  const spendRows=backups.map(b=>{
+    let g=0,l=0;
+    Object.values(b.gifts||{}).forEach(a=>(a||[]).forEach(x=>{ if(inYr(x.ts)) g+=(+x.cost||0); }));
+    Object.values(b.lunches||{}).forEach(a=>(a||[]).forEach(x=>{ if(inYr(x.ts)) l+=(+x.cost||0); }));
+    return {label:b.label,g,l,tot:g+l};
+  }).sort((a,b)=>b.tot-a.tot);
+  const totGift=spendRows.reduce((s,x)=>s+x.g,0), totLunch=spendRows.reduce((s,x)=>s+x.l,0);
+  // per-physician gift totals across the whole team
+  const byPhys={};
+  backups.forEach(b=>Object.entries(b.gifts||{}).forEach(([id,arr])=>{
+    const amt=(arr||[]).filter(x=>inYr(x.ts)).reduce((s,x)=>s+(+x.cost||0),0);
+    if(amt && master.byId[id]) byPhys[id]=(byPhys[id]||0)+amt;
+  }));
+  const topPhys=Object.entries(byPhys).map(([id,amt])=>({p:master.byId[id],amt}))
+                      .sort((a,b)=>b.amt-a.amt).slice(0,10);
+  const anySpend=totGift+totLunch>0;
+
+  const topGaps=gaps.slice(0,25);
+  let html=`
+  <div class="rhead">
+    <div class="prac">${esc(prac)}</div>
+    <div class="meta">Liaison Team Activity Report &middot; ${periodLabel(period)} &middot; generated ${new Date().toLocaleDateString()}</div>
+  </div>
+  <div class="tiles">
+    <div class="tile"><div class="n">${totVisits}</div><div class="l">visits logged<br>(${period==='all'?'all time':'this period'})</div></div>
+    <div class="tile"><div class="n">${totNotes}</div><div class="l">call notes<br>(${period==='all'?'all time':'this period'})</div></div>
+    ${anyVm?`<div class="tile"><div class="n">${totVms}</div><div class="l">CALL IT IN<br>(${period==='all'?'all time':'this period'})</div></div>`:''}
+    <div class="tile"><div class="n">${backups.length}</div><div class="l">liaisons<br>reporting</div></div>
+    <div class="tile"><div class="n">${covPct}%</div><div class="l">of ${covMin}+ referral providers<br>reached (${covered}/${total})</div></div>
+    <div class="tile warn"><div class="n">${clinicGaps.length}</div><div class="l">clinics not reached<br>this period</div></div>
+    <div class="tile warn"><div class="n">${gaps.length}</div><div class="l">providers not reached<br>this period</div></div>
+  </div>
+
+  ${yoy?`
+  <div class="blocktitle">Year over year</div>
+  <div class="clock">${esc(yoy.months)} matched months &middot; ${esc(yoy.prevLabel)} &rarr; ${esc(yoy.curLabel)}</div>
+  <div class="blocknote">The same calendar months on both sides, so a slow January or a busy autumn
+    cannot flatter or flatten the comparison. This is the practice&rsquo;s referral base, not any one
+    liaison&rsquo;s work.</div>
+  <div class="blocknote">Two cautions. Only the months shown are on file, so a physician who referred outside
+    that window last year and again this year reads as new when the relationship is not. And when a provider&rsquo;s
+    address changes, the download gives the old and new addresses separate records &mdash; the same doctor can look
+    like a departure and a newcomer at once.${yoy.movedN?` ${yoy.movedN} provider${yoy.movedN===1?'':'s'} matched that
+    pattern here and ${yoy.movedN===1?'was':'were'} kept off the stopped list below.`:''}</div>
+  <div class="tiles">
+    <div class="tile${yoy.pct<0?' warn':''}"><div class="n">${yoy.pct>=0?'+':''}${Math.round(yoy.pct)}%</div>
+      <div class="l">${yoy.pa.toLocaleString()} &rarr; ${yoy.pb.toLocaleString()} referrals</div></div>
+    <div class="tile"><div class="n">${yoy.na.toLocaleString()} &rarr; ${yoy.nb.toLocaleString()}</div>
+      <div class="l">referring physicians</div></div>
+  </div>
+
+  <div class="blocktitle">Where the change came from</div>
+  <div class="blocknote">These add up to the figure above, which is what makes it worth acting on: growth of
+    the same size means something different depending on which part produced it. Note the split among the
+    newcomers &mdash; a physician who sent one referral all year is a patient who happened to name a doctor,
+    not a new relationship, and counting those together would overstate how many were actually won.</div>
+  <div class="blocknote">A physician whose address changed gets a new record in the download, so the old one
+    goes quiet while the new one starts from nothing. Those are counted separately below rather than as a
+    departure and a win at once &mdash; they are the same doctor, still referring.</div>
+  <div class="tiles">
+    <div class="tile"><div class="n">${yoy.kept>=0?'+':''}${yoy.kept.toLocaleString()}</div>
+      <div class="l">from the ${yoy.keptN.toLocaleString()} who referred<br>in both years</div></div>
+    <div class="tile"><div class="n">+${yoy.newReal.toLocaleString()}</div>
+      <div class="l">from ${yoy.newRealN.toLocaleString()} new referrers<br>sending ${CORE_MIN}+</div></div>
+    <div class="tile"><div class="n">+${yoy.newOnce.toLocaleString()}</div>
+      <div class="l">from ${yoy.newOnceN.toLocaleString()} who sent<br>fewer than ${CORE_MIN}</div></div>
+    <div class="tile warn"><div class="n">&minus;${yoy.lost.toLocaleString()}</div>
+      <div class="l">lost from ${yoy.lostN.toLocaleString()} who<br>stopped referring</div></div>
+    ${yoy.movedN?`<div class="tile"><div class="n">&minus;${yoy.moved.toLocaleString()}</div>
+      <div class="l">${yoy.movedN} changed address<br>&mdash; counted under the new one</div></div>`:''}
+  </div>
+
+  ${yoy.accounted.length?`
+  <div class="blocktitle">Stopped referring &mdash; reason established</div>
+  <div class="blocknote"><b>${yoy.accounted.length}</b> ${yoy.accounted.length===1?'physician':'physicians'}
+    sent ${CORE_MIN}+ in ${esc(yoy.prevLabel)} and nothing in ${esc(yoy.curLabel)}, and the reason is already
+    known from the field &mdash; together <b>${yoy.accVol.toLocaleString()}</b>
+    ${yoy.accVol===1?'referral':'referrals'} that left for a reason no call could have prevented.
+    No download says why a physician stopped; this is recorded in the field, one provider at a time,
+    and it is the only thing separating a doctor who retired from one who drifted.</div>
+  <table><thead><tr><th>Provider</th><th>City</th><th>What happened</th><th class="num">${esc(yoy.prevLabel.slice(-3))}</th></tr></thead><tbody>
+  ${yoy.accReasons.map(r=>yoy.accBy[r].slice(0,12).map(x=>{const p=provInfo(x.id);
+    return `<tr><td>${esc(p.name||x.id)}</td><td>${esc(p.city||'')}</td><td>${esc(r)}</td><td class="num">${x.a}</td></tr>`;}).join('')).join('')}
+  </tbody></table>
+  <div class="gap-count">${yoy.accReasons.map(r=>esc(r)+' '+yoy.accBy[r].length).join(' &middot; ')}</div>
+  `:''}
+
+  ${yoy.stopped.length?`
+  <div class="blocktitle">Stopped referring &mdash; no reason yet</div>
+  <div class="blocknote"><b>${yoy.stopped.length}</b> ${yoy.stopped.length===1?'physician':'physicians'} sent
+    ${CORE_MIN} or more in ${esc(yoy.prevLabel)} and nothing at all in ${esc(yoy.curLabel)}, with nothing on
+    file to say why. This is a call list, not a verdict: a provider may have retired, moved, or stopped
+    treating ortho, and until someone asks, the report cannot tell that apart from a relationship going
+    cold. ${yoy.movedN?`Providers whose record simply changed address are already excluded, as are those`:`Providers`}
+    whose reason has been established ${yoy.accounted.length?`&mdash; ${yoy.accounted.length} of them, listed above`:''}.
+    They are worth the call precisely because nothing else finds them: a provider who stops entirely drops
+    out of the current download, so they never appear as sliding &mdash; they simply are not there.</div>
+  <table><thead><tr><th>Provider</th><th>City</th><th class="num">${esc(yoy.prevLabel.slice(-3))}</th></tr></thead><tbody>
+  ${yoy.stopped.slice(0,25).map(x=>{const p=provInfo(x.id);
+    return `<tr><td>${esc(p.name||x.id)}</td><td>${esc(p.city||'')}</td><td class="num">${x.a}</td></tr>`;}).join('')}
+  </tbody></table>
+  ${yoy.stopped.length>25?`<div class="gap-count">&hellip;and ${yoy.stopped.length-25} more.</div>`:''}
+  `:''}
+
+  ${(()=>{const mv=yoy.movers.filter(x=>x.kind!=='moved').sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta)).slice(0,20);
+    if(!mv.length) return '';
+    return `<div class="blocktitle">Biggest movers against the territory</div>
+    <div class="blocknote">Physicians who referred in both years, ranked by the size of the change. Each is
+      judged against the territory&rsquo;s own ${yoy.pct>=0?'+':''}${Math.round(yoy.pct)}% move and against how much
+      a referrer their size normally varies &mdash; so a doctor who slipped less than the book did is not
+      called a decline.</div>
+    <table><thead><tr><th>Provider</th><th>City</th><th class="num">${esc(yoy.prevLabel.slice(-3))}</th><th class="num">${esc(yoy.curLabel.slice(-3))}</th><th class="num">Change</th></tr></thead><tbody>
+    ${mv.map(x=>{const p=provInfo(x.id);
+      return `<tr><td>${esc(p.name||x.id)}</td><td>${esc(p.city||'')}</td><td class="num">${x.a}</td><td class="num">${x.b}</td>`+
+        `<td class="num" style="color:${x.kind==='beat'?'#1F5B2A':'#9B2C2C'};font-weight:700">${x.delta>0?'+':''}${x.delta}</td></tr>`;}).join('')}
+    </tbody></table>`;})()}
+  `:''}
+
+  <div class="blocktitle">The territory</div>
+  ${book?`
+  <div class="clock">Three months against the three before &middot; ${esc(book.beforeLabel)} &rarr; ${esc(book.recentLabel)}</div>
+  <div class="blocknote">Total referrals into the practice, from every provider your liaisons carry. This is the only number here that is <b>not</b> about any one provider or liaison &mdash; it is the territory's own volume, and it is the yardstick every provider is judged against.</div>
+  <div class="tiles">
+    <div class="tile${book.pct<0?' warn':''}"><div class="n">${book.pct>0?'+':''}${book.pct}%</div><div class="l">the territory<br>${esc(book.beforeLabel)} &rarr; ${esc(book.recentLabel)}</div></div>
+    <div class="tile"><div class="n">${book.beat}</div><div class="l">core referrers beat<br>the territory</div></div>
+    <div class="tile"><div class="n">${book.matched}</div><div class="l">moved with<br>the territory</div></div>
+    <div class="tile${book.trailed?' warn':''}"><div class="n">${book.trailed}</div><div class="l">trailed<br>the territory</div></div>
+  </div>
+  <table><thead><tr><th>Monthly totals</th>${book.strip.map(m=>`<th class="num">${esc(m.lab)}</th>`).join('')}</tr></thead><tbody>
+  <tr><td>Referrals</td>${book.strip.map(m=>`<td class="num">${m.v}</td>`).join('')}</tr>
+  </tbody></table>
+  <div class="blocknote"><b>Core referrers</b> &mdash; the ${book.judged} providers who sent ${CORE_MIN} or more in ${esc(book.beforeLabel)} &mdash; are what the tiles above count, because that is where a change means something. ${
+    book.pct<=-BAND && book.trailed<=Math.round(book.judged*0.25)
+      ? `<b>Read this one carefully.</b> The territory is down ${Math.abs(book.pct)}% while ${book.beat+book.matched} of them held their ground or gained against it. A decline that shows up almost everywhere at once is usually not coming from the field &mdash; look at payer mix, scheduling capacity, provider availability, a competitor entering the market, or a change in marketing. Worth comparing against whatever finance is already seeing.`
+      : book.pct>=BAND
+      ? `The territory is up ${book.pct}%, so holding flat is losing ground &mdash; the ${book.trailed} trailing it are where to start.`
+      : `The territory is close to flat, so each provider's own movement is the signal, and the ${book.trailed} core referrers trailing it are where to start.`
+  }</div>
+  <div class="blocknote"><b>Occasional referrers</b> &mdash; the ${book.oJudged} who sent fewer than ${CORE_MIN} across those same three months &mdash; are summarized here rather than included in the tiles. ${book.oBeat} came out ahead of the territory, ${book.oMatched} level with it, ${book.oTrailed} behind. At these volumes a one- or two-referral swing is ordinary, so it is reported but doesn't move the headline numbers.</div>
+  <div class="blocknote">Seasonality moves the whole territory at once &mdash; deductibles reset in January and volume climbs through the autumn &mdash; which is why providers are graded against this figure rather than their own past. Small referral counts also bounce around on their own &mdash; a doctor who sent three and then sent two has not changed anything. So the size of the move required scales with the size of the referrer: a 50-referral doctor is flagged on a drop that would be ignored on a five-referral doctor.</div>
+  `:`<div class="blocknote">This fills in once liaison backups carry at least six months of imported referral history. In the app, add one month at a time from the CRM export &mdash; six months in, this section shows the practice's own volume trend and how many providers are beating it.</div>`}
+
+  <div class="blocktitle">By liaison</div>
+  <table><thead><tr><th>Liaison</th><th class="num">Visits</th><th class="num">To prospects</th><th class="num">Pipeline</th><th class="num">Notes</th>${anyVm?'<th class="num">Called in</th>':''}<th class="num">Cities</th></tr></thead><tbody>
+  ${perLiaison.map(l=>`<tr><td>${esc(l.label)}</td><td class="num">${l.visits}</td><td class="num">${l.pros||'&mdash;'}</td><td class="num">${l.prospects||'&mdash;'}</td><td class="num">${l.notes}</td>${anyVm?`<td class="num">${l.vms||'&mdash;'}</td>`:''}<td class="num">${l.cities}</td></tr>`).join('')}
+  </tbody></table>
+  <div class="blocknote">${totPros?`<b>${totPros}</b> of those visits were to prospects &mdash; physicians not yet referring, so they do not appear in the practice export. `:''}<b>Pipeline</b> is how many prospects each liaison is currently working.</div>
+
+  <div class="blocktitle">Top referrers</div>
+  <div class="blocknote">The practice's highest-volume referring providers${priorMaster?' (current report)':''}. This is the relationship base &mdash; the accounts most worth protecting.${retiredShown?` Providers a liaison has marked <b>retired</b> are left out &mdash; ${retiredShown} on this report.`:''}</div>
+  <table><thead><tr><th style="width:34px">#</th><th>Provider</th><th>City</th><th class="num">Referrals</th></tr></thead><tbody>
+  ${topVol.map((p,i)=>`<tr><td class="num rank">${i+1}</td><td>${esc(p.name)}${p.type?' <span style="color:var(--muted);font-size:12px">'+p.type+'</span>':''}</td><td>${esc(p.city)}</td><td class="num">${p.count}</td></tr>`).join('')}
+  </tbody></table>
+
+  ${(function(){
+    if(!typedMonths.length) return `
+  <div class="blocktitle">New patients vs returning</div>
+  <div class="blocknote">No appointment-type report has been imported, so there is no new-patient
+    figure to show. The referral totals above count every patient seen in the period, which includes
+    people coming back whose chart still names the provider who first sent them &mdash; so a doctor can
+    carry volume for years after they stop referring. Import the appointment-type pull for a month and
+    this block will say how much of that volume is new business.</div>`;
+    const sum=(mm)=>typedMonths.reduce((a,k)=>a+(+((mm||{})[k])||0),0);
+    const rows=[];
+    const ids=new Set([...Object.keys(bookById),...Object.keys(newById)]);
+    ids.forEach(id=>{
+      const tot=sum(bookById[id]), nw=sum(newById[id]);
+      if(tot<=0) return;
+      const p=provInfo(id);
+      rows.push({name:p.name||id, city:p.city||'', tot, nw, pc: Math.round(100*nw/tot)});
+    });
+    if(!rows.length) return '';
+    rows.sort((a,b)=>b.tot-a.tot);
+    const top=rows.slice(0,20);
+    const T=rows.reduce((a,r)=>a+r.tot,0), N=rows.reduce((a,r)=>a+r.nw,0);
+    const label = typedMonths.length===1 ? mlab(typedMonths[0])
+                : mlab(typedMonths[0])+' \u2013 '+mlab(typedMonths[typedMonths.length-1]);
+    const zero=rows.filter(r=>r.nw===0 && r.tot>=5).length;
+    return `
+  <div class="blocktitle">New patients vs returning</div>
+  <div class="clock">${esc(label)} &middot; the month${typedMonths.length===1?'':'s'} an appointment-type report was imported</div>
+  <div class="blocknote">A referral total counts every patient seen, including people coming back whose
+    chart still names whoever first sent them &mdash; so a provider can carry volume for years after they
+    stop referring. Both columns here cover <b>the same months</b>, so the share is a fair one.
+    Across these referrers <b>${N}</b> of <b>${T}</b> patients were new &mdash; <b>${Math.round(100*N/T)}%</b>.${zero?`
+    <b>${zero}</b> ${zero===1?'provider':'providers'} with 5 or more patients sent none at all.`:''}
+    One month is thin evidence for any single provider; the territory share is the solid number.</div>
+  <table><thead><tr><th style="width:34px">#</th><th>Provider</th><th>City</th><th class="num">Patients</th><th class="num">New</th><th class="num">New %</th></tr></thead><tbody>
+  ${top.map((r,i)=>`<tr><td class="num rank">${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.city)}</td><td class="num">${r.tot}</td><td class="num">${r.nw}</td><td class="num${r.pc<10?' warn':''}">${r.pc}%</td></tr>`).join('')}
+  </tbody></table>
+  ${rows.length>20?`<div class="gap-count">&hellip;and ${rows.length-20} more referrers.</div>`:''}`;
+  })()}
+
+  <div class="blocktitle">Gaining &amp; slipping</div>
+  ${priorMaster?`
+  <div class="clock">Month over month &middot; the two CRM downloads you loaded</div>
+  <div class="blocknote">Change between the two reports you loaded, ranked by <b>how many referrals moved</b> &mdash; not percentage &mdash; so a provider going 1&rarr;3 never outranks a real account losing 20. A <span class="tag new">new</span> tag means a first-time referrer; <span class="tag drop">stopped</span> means they referred before this report and haven't since.${gsRematched?` ${gsRematched} ${gsRematched===1?'physician was':'physicians were'} matched between the two reports by <b>NPI</b> rather than by record, because the chart intake used most had changed &mdash; without that they would each appear twice, once as a newcomer and once as a loss.`:''}</div>
+  <div class="lbcols">
+    <div>
+      <div class="lbhead up">Moving up</div>
+      <table><thead><tr><th>Provider</th><th class="num">Was&rarr;Now</th><th class="num">Change</th></tr></thead><tbody>
+      ${gainers.length?gainers.map(r=>`<tr><td>${esc(r.name)}${r.isNew?' <span class="tag new">new</span>':''}</td><td class="num rank">${r.prior}&rarr;${r.cur}</td><td class="num up">+${r.delta}</td></tr>`).join(''):'<tr><td colspan="3" style="color:var(--muted)">No increases between these reports.</td></tr>'}
+      </tbody></table>
+    </div>
+    <div>
+      <div class="lbhead down">Slipping</div>
+      <table><thead><tr><th>Provider</th><th class="num">Was&rarr;Now</th><th class="num">Change</th></tr></thead><tbody>
+      ${decliners.length?decliners.map(r=>`<tr><td>${esc(r.name)}${r.dropped?' <span class="tag drop">stopped</span>':''}</td><td class="num rank">${r.prior}&rarr;${r.cur}</td><td class="num down">${r.delta}</td></tr>`).join(''):'<tr><td colspan="3" style="color:var(--muted)">No declines between these reports.</td></tr>'}
+      </tbody></table>
+    </div>
+  </div>`:`<div class="blocknote">Load a prior-period report in Step 1 &mdash; last month's or last quarter's copy of the same export &mdash; and this fills in with who's gaining and who's slipping, ranked by how many referrals actually moved.</div>`}
+
+  <div class="blocktitle">Clinic coverage gaps — offices not reached this period</div>
+  <div class="blocknote"><span class="gap-count">${clinicGaps.length} of ${covClinics.length} clinics worth ${covMin}+ combined referrals have not been reached this period.</span> Providers at the same address roll up into one clinic and their referrals are summed &mdash; one visit to anyone there \u2014 or a note on the office staff \u2014 counts the whole office. Clinic coverage: <b>${clinicCovPct}%</b> (${clinicsCovered}/${covClinics.length} reached). Top ${topClinicGaps.length} not reached, by combined volume:</div>
+  <table><thead><tr><th>Clinic</th><th>City</th><th class="num">Providers</th><th class="num">Referrals</th></tr></thead><tbody>
+  ${topClinicGaps.map(c=>`<tr><td>${esc(c.addr1)} <span style="color:var(--muted);font-size:12px">${esc(c.providers[0].name)}${c.providers.length>1?' +'+(c.providers.length-1)+' more':''}</span></td><td>${esc(c.city)}</td><td class="num">${c.providers.length}</td><td class="num">${c.count}</td></tr>`).join('')}
+  ${topClinicGaps.length===0?'<tr><td colspan="4" style="color:var(--muted)">Every clinic at or above this combined volume has been reached.</td></tr>':''}
+  </tbody></table>
+
+  <div class="blocktitle">Individual providers not reached this period</div>
+  <div class="blocknote"><span class="gap-count">${gaps.length} of ${total} providers with ${covMin} or more referrals have not been visited or noted by anyone this period.</span> A provider counts as reached once someone marks them visited or writes a note on them. Anyone below ${covMin} referrals is left out of coverage entirely. Top ${topGaps.length} by referral volume:</div>
+  <table><thead><tr><th>Provider</th><th>City</th><th class="num">Referrals</th></tr></thead><tbody>
+  ${topGaps.map(p=>`<tr><td>${esc(p.name)}${p.type?' <span style="color:var(--muted);font-size:12px">'+p.type+'</span>':''}</td><td>${esc(p.city)}</td><td class="num">${p.count}</td></tr>`).join('')}
+  ${topGaps.length===0?'<tr><td colspan="3" style="color:var(--muted)">Every provider at or above this referral count has been reached — full coverage.</td></tr>':''}
+  </tbody></table>
+
+  <div class="blocktitle">Cities needing attention</div>
+  <div class="blocknote">The 20 cities with the lowest coverage — where the team should focus next. Cities you've already covered well aren't shown here.</div>
+  <table><thead><tr><th>City</th><th>Covered</th><th class="num">%</th></tr></thead><tbody>
+  ${cityRows.slice(0,20).map(c=>`<tr class="covrow"><td>${esc(c.city)}</td><td><span class="citybar"><i style="width:${c.pct}%"></i></span><span class="pct">${c.vis}/${c.tot}</span></td><td class="num">${c.pct}%</td></tr>`).join('')}
+  </tbody></table>
+  ${anySpend?`
+  <div class="blocktitle">Gifts and meals &middot; ${YR}</div>
+  <table><thead><tr><th>Liaison</th><th class="num">Gifts</th><th class="num">Meals</th><th class="num">Total</th></tr></thead><tbody>
+  ${spendRows.map(r=>`<tr><td>${esc(r.label)}</td><td class="num">${money(r.g)}</td><td class="num">${money(r.l)}</td><td class="num"><b>${money(r.tot)}</b></td></tr>`).join('')}
+  <tr><td><b>Practice total</b></td><td class="num"><b>${money(totGift)}</b></td><td class="num"><b>${money(totLunch)}</b></td><td class="num"><b>${money(totGift+totLunch)}</b></td></tr>
+  </tbody></table>
+  ${topPhys.length?`<table style="margin-top:12px"><thead><tr><th>Highest gift value by physician</th><th>City</th><th class="num">${YR} total</th></tr></thead><tbody>
+  ${topPhys.map(x=>`<tr><td>${esc(x.p.name)}</td><td>${esc(x.p.city)}</td><td class="num">${money(x.amt)}</td></tr>`).join('')}
+  </tbody></table>`:''}
+  <div class="blocknote">Calendar year to date, whatever period is selected above &mdash; the federal non-monetary compensation limit is measured per physician per calendar year. <b>Gifts are attributed to the individual physician. Meals stay attributed to the office as they were bought</b>, since how a shared meal is allocated between the physicians there is your compliance officer&rsquo;s call, not the software&rsquo;s. Each liaison&rsquo;s own Gifts &amp; lunches report lists every item with dates, and shows an even-split figure per office as a convenience.</div>
+  `:''}
+
+  <div class="blocknote" style="margin-top:14px">Activity figures cover ${periodLabel(period).toLowerCase()}. Coverage and gaps are all-time \u2014 whether a provider has ever been marked visited or had a note logged, which survives a liaison resetting a city \u2014 and count only providers with ${covMin} or more referrals. Based on ${backups.length} liaison backup${backups.length==1?'':'s'} as of their last export.</div>
+  `;
+  document.getElementById('report').innerHTML=html;
+  document.getElementById('report').style.display='block';
+  document.getElementById('printBtn').style.display='block';
+  document.getElementById('report').scrollIntoView({behavior:'smooth'});
+  mgrSave();                       // keep whatever settings the manager just used
+}
+
+// ---------- boot ----------
+// This script sits at the end of <body>, so the DOM is already up when it runs.
+['pracName','covMin','period','customStart','customEnd'].forEach(id=>{
+  const e=document.getElementById(id); if(e) e.addEventListener('change',mgrSaveSoon);
+});
+const _pn=document.getElementById('pracName'); if(_pn) _pn.addEventListener('input',mgrSaveSoon);
+mgrRestore();
+</script>
+
+<div class="brandfoot">
+  <b>Referral Rounds</b><span class="tm">&trade;</span>
+  <span class="bfsep">&middot;</span>
+  Physician Relationship Management for Orthopedic Practices
+  <span class="bfsep">&middot;</span>
+  <!-- Printed so a stale copy can be told from a fresh one at a glance. Twice in one
+       day a cached file was mistaken for the current one; a visible stamp settles it. -->
+  Report build <span id="mgrbuild">2026.10.21e</span>
+</div>
+</body>
+</html>
