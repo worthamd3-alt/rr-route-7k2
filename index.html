@@ -1,4 +1,4 @@
-<!--RRBUILD:2026.11.11a-->
+<!--RRBUILD:2026.11.11b-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Referral Rounds">
 <title>Referral Rounds</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="xlsx.full.min.js"></script>
 <meta name="robots" content="noindex, nofollow">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAE70lEQVR4nO3cMXLbRgCFYUjj1q2L3CNdZnKK1D6Ai4wrn8GVJ4UOoDqnyEy63COFWx/AaUxHokkRC+wugLff15uEwV/PK8nk3bQTr9+9/br1NbDOl4fHu62vYbMLEHC+LQLv+oQiHlevuJs/iYg51zLuZg8sZG5pEXb1BxQypWqGfV/rgaZJzCxTs5sqXxlCppa1a716ocVMTWt7WhW0mGlhTVeL5l3I9FJ6BCleaDHTU2lvRUGLmS2UdDc7aDGzpbn9Vf05NGxtVtDWmT2Y0+HNoMXMntzq8cWgxcwevdSlMzRRrgZtndmza31eDFrMHMGlTh05iPJD0NaZIznv1UIT5VnQ1pkjetqthSaKoInyPWjHDY7s1K+FJoqgiXI3TY4b5LDQRBE0UQRNlHvnZ5JYaKK82voCjuzPn/5p9ti//ftzs8dOJugFWoZ8/hzCLuPIUahHzFs+39EJusBWcYl6PkETRdAzbb2SWz//UQiaKIImiqCJImiiDPmLlc8fPxX/mb/++KXBlZRZct1vPrxvcCX7NVTQS4I4utPfeZSwhwh6xJDPjRJ2/BlazM+l34/ooNNfvKWS70ts0MkvWg2p9yc26Np+/f3voZ//KCKDTl2f2hLvU2TQrWy1ktZ5vrigW69O77haP1/aSg/xc+jaTpG1/O2hVV5G0CuIbn/ijhyMTdBEETRRBE0UQRNF0EQRNFEETRRBE0XQRBE0UQRNFEETRdBEEfTBpX/ORilBH9gpZlH/T9AHdR7xmw/vhT0JOs7oUQv6gG5FO/JaC/pgSkIdMWpBH0hpoGkfUTCHoA9CzPMImiiCPgDrPJ+gd07MZQS9Y2IuJ+idEvMygiaKoHfIOi8n6J0R8zqC3hExryfonRBzHYImiqB3wDrXI+iNibkuQV/R4/8Si7k+QV/Q482nYm5D0GcuvfmU4xD0E9firR21dW5H0N/MeeNpj+c5J+Yygp7mR7Y2ajG3N3zQpZEtjVrMfQwddK846WfooNesYMvPx7DOyw0d9DS1j1rMfQ0f9DS1i1rM/Qn6m9pRi3kbgn6i15madgR9pkbU1nk7gr6g51KLuS5BX9EjNDHXJ+gXtAxOzG0I+gbhHYugZ6gdtS+SdgQ9U60IxdyWoAusjVHM7Qm60NIoxdyHoBcQ534JeqGSqH0B9CPoFeaEKua+BL3SKdjzcD9//CTmDbza+gISXIua/iw0UQRNFEETRdBEETRRBE0UQRNF0EQRNFEETRRBE0XQRIkL2kdylUm7X3FBM7bIoNNWp5XE+xQZNOOKDTpxfWpKvT+xQU9T7ou2VvJ9iQ56mrJfvCXS78fd63dvv259Eb2M/J6/9JBPhgr6ZKSwRwn5ZMigyRV/hmYsgiaKoIkiaKIImij3Xx4e77a+CKjFQhNF0EQRNFHup2manKNJ8OXh8c5CE0XQRPketGMHR3bq10ITRdBEeRa0YwdH9LRbC02UH4K20hzJea8WmigXg7bSHMGlTq8utKjZs2t9OnIQ5cWgrTR79FKXNxda1OzJrR5nHTlEzR7M6dAZmiizg7bSbGluf0ULLWq2UNJd8ZFD1PRU2tuqOH1yKa0sHc5V3xRaa1pY09Xqn3KImprW9lQ1RkcQlqo1jFV/Dm2tWaJmN80CtNbc0mIAmy+qsDnX8l/yrkcEcY+r13F0szOvuPNt8T3Vf0RItDILSLUyAAAAAElFTkSuQmCC">
 <style>
@@ -856,6 +856,13 @@ function setRetired(id,on){ if(on)retired[id]=Date.now(); else delete retired[id
    rather than reporting an account that walked. "Moved practice" is the wrong word for
    either of them - it would print that volume as business lost. */
 const OWN_REASON='Works for us';
+/* 11.11b. The search-row pill said "Retired" for EVERY record taken off the route,
+   so a merged duplicate read as a retired doctor. The card already shows the real
+   reason; the pill now uses the same reason in a short form. */
+const OFF_ROUTE_SHORT={'Merged duplicate':'Merged','Retired':'Retired','No referrals':'No referrals',
+  'Moved practice':'Moved','No longer sees ortho':'No ortho','Left the area':'Left area',
+  'Works for us':'Works for us','Used to work for us':'Former SOG','Other':'Off route'};
+function offRouteTag(id){ const w=retiredWhy[id]; return OFF_ROUTE_SHORT[w]||'Off route'; }
 const OWN_REASON_PAST='Used to work for us';
 const RETIRE_REASONS=['No referrals','Retired','Moved practice','No longer sees ortho','Left the area',OWN_REASON,OWN_REASON_PAST,'Other'];
 /* FIELD NOTES. One free-text block per provider, for the standing facts no CRM
@@ -2392,7 +2399,7 @@ function provRow(p){
             the half worth knowing. */''}
       ${alsoAt[p.id]?`<div class="palso">Also at: ${esc(alsoAt[p.id])}</div>`:''}
       <div class="badges">
-        ${isRetired(p.id)?'<span class="tag rettag">Retired</span>':''}
+        ${isRetired(p.id)?'<span class="tag rettag">'+esc(offRouteTag(p.id))+'</span>':''}
         ${refBadge(p)}
         ${ntext}
       </div>
@@ -2516,7 +2523,7 @@ function followupCard(){
   </div>`;
 }
 let UPDATE_AVAIL=null, UPD_MSG='';
-const BUILD='2026.11.11a';
+const BUILD='2026.11.11b';
 /* Extracted so the search results can show a real city card too, not just
    provider rows. Same markup, same binding, one definition. */
 function cityCard(c){
